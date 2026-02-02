@@ -39,8 +39,8 @@ export function TripCalculator() {
     : [];
 
   const comparisonUrl = selectedDestination
-    ? `${selectedDestination.comparisonUrl}&utm_source=calculator&utm_medium=trip-cost&utm_campaign=${selectedDestination.id}`
-    : '#';
+    ? `https://app-stg.policymarket.shop/sr-RS?utm_source=calculator&utm_medium=trip-cost&utm_campaign=${selectedDestination.id}`
+    : 'https://app-stg.policymarket.shop/sr-RS';
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
