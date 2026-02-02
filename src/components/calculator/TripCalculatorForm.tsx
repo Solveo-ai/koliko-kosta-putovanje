@@ -21,7 +21,6 @@ interface TripCalculatorFormProps {
   onTravelersChange: (value: number) => void;
   onStyleChange: (value: TravelStyle) => void;
   onCalculate: () => void;
-  isDestinationLocked?: boolean;
 }
 
 export function TripCalculatorForm({
@@ -34,7 +33,6 @@ export function TripCalculatorForm({
   onTravelersChange,
   onStyleChange,
   onCalculate,
-  isDestinationLocked = false,
 }: TripCalculatorFormProps) {
   return (
     <div className="space-y-6">
@@ -44,9 +42,8 @@ export function TripCalculatorForm({
         <Select
           value={destination}
           onValueChange={(value) => onDestinationChange(value as DestinationId)}
-          disabled={isDestinationLocked}
         >
-          <SelectTrigger className="w-full bg-secondary/50 text-foreground">
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Izaberi destinaciju" />
           </SelectTrigger>
           <SelectContent>
@@ -86,7 +83,7 @@ export function TripCalculatorForm({
           value={travelers.toString()}
           onValueChange={(value) => onTravelersChange(parseInt(value, 10))}
         >
-          <SelectTrigger className="w-full bg-secondary/50 text-foreground">
+          <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -105,10 +102,10 @@ export function TripCalculatorForm({
         <RadioGroup
           value={style}
           onValueChange={(value) => onStyleChange(value as TravelStyle)}
-          className="flex flex-wrap gap-3"
+          className="grid gap-3"
         >
           {travelStyles.map((s) => (
-            <div key={s.id} className="flex items-center">
+            <div key={s.id} className="flex items-start">
               <RadioGroupItem
                 value={s.id}
                 id={s.id}
@@ -116,9 +113,10 @@ export function TripCalculatorForm({
               />
               <Label
                 htmlFor={s.id}
-                className="cursor-pointer rounded-lg border border-border bg-secondary/30 px-4 py-2 text-sm font-medium text-foreground transition-all peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/20 peer-data-[state=checked]:text-primary hover:bg-secondary/50"
+                className="flex w-full cursor-pointer flex-col gap-1 rounded-lg border border-border bg-card px-4 py-3 transition-all peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-muted/50"
               >
-                {s.label}
+                <span className="font-medium text-foreground">{s.label}</span>
+                <span className="text-xs text-muted-foreground">{s.description}</span>
               </Label>
             </div>
           ))}
