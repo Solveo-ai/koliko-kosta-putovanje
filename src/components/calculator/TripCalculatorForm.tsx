@@ -113,7 +113,7 @@ export function TripCalculatorForm({
               />
               <Label
                 htmlFor={s.id}
-                className="flex w-full cursor-pointer flex-col gap-1 rounded-lg border border-border bg-card px-4 py-3 transition-all peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-muted/50"
+                className="flex w-full cursor-pointer flex-col gap-1 rounded-lg border border-border bg-card px-4 py-3 transition-all peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-secondary hover:bg-muted"
               >
                 <span className="font-medium text-foreground">{s.label}</span>
                 <span className="text-xs text-muted-foreground">{s.description}</span>

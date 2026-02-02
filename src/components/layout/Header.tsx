@@ -1,22 +1,31 @@
 import { Link } from 'react-router-dom';
-import miskoAvatar from '@/assets/misko-avatar.png';
 
 export function Header() {
   return (
-    <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="bg-card border-b border-border">
       <div className="container flex h-16 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={miskoAvatar} alt="PolicyMarket" className="h-8 w-8 rounded-full" />
-          <span className="text-lg font-bold text-foreground">PolicyMarket</span>
+        <Link to="/" className="flex items-center">
+          <span className="text-xl tracking-tight text-foreground">
+            <span className="font-normal">policy</span>
+            <span className="font-bold">market</span>
+          </span>
         </Link>
-        <nav>
+        <nav className="flex items-center gap-6">
           <a
-            href="https://policymarket.rs"
+            href="https://policymarket.rs/kontakt"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+            className="text-sm text-foreground transition-colors hover:text-primary"
           >
-            Nazad na sajt →
+            Kontaktirajte nas
+          </a>
+          <a
+            href="https://policymarket.rs/blog"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-foreground transition-colors hover:text-primary"
+          >
+            Blog
           </a>
         </nav>
       </div>
