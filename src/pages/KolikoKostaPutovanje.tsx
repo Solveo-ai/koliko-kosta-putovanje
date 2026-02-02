@@ -8,7 +8,7 @@ export default function KolikoKostaPutovanje() {
       <SEOHead
         title="Koliko košta putovanje? | Kalkulator troškova putovanja"
         description="Izračunaj koliko košta tvoje putovanje. Proceni troškove leta, smeštaja, hrane i prevoza za najpopularnije destinacije."
-        canonicalPath="/koliko-kosta-putovanje"
+        canonicalPath="/"
       />
       
       <section className="py-12 md:py-16">

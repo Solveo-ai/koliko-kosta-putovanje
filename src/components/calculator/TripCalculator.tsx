@@ -8,13 +8,8 @@ import { CostResults } from './CostResults';
 import { MiskoQuote } from './MiskoQuote';
 import { EmailCapture } from './EmailCapture';
 
-interface TripCalculatorProps {
-  defaultDestination?: DestinationId;
-  autoCalculate?: boolean;
-}
-
-export function TripCalculator({ defaultDestination, autoCalculate = false }: TripCalculatorProps) {
-  const [destination, setDestination] = useState<DestinationId | ''>(defaultDestination || '');
+export function TripCalculator() {
+  const [destination, setDestination] = useState<DestinationId | ''>('');
   const [days, setDays] = useState(7);
   const [travelers, setTravelers] = useState(2);
   const [style, setStyle] = useState<TravelStyle>('midrange');
@@ -30,13 +25,6 @@ export function TripCalculator({ defaultDestination, autoCalculate = false }: Tr
     setResults(breakdown);
     setShowResults(true);
   };
-
-  // Auto-calculate on mount for destination-specific pages
-  useEffect(() => {
-    if (autoCalculate && defaultDestination) {
-      handleCalculate();
-    }
-  }, []);
 
   // Recalculate when inputs change if results are already showing
   useEffect(() => {
@@ -57,7 +45,7 @@ export function TripCalculator({ defaultDestination, autoCalculate = false }: Tr
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       {/* Calculator Form */}
-      <Card className="border-border/50 bg-card">
+      <Card className="border-border bg-card shadow-sm">
         <CardContent className="p-6">
           <TripCalculatorForm
             destination={destination}
@@ -69,7 +57,6 @@ export function TripCalculator({ defaultDestination, autoCalculate = false }: Tr
             onTravelersChange={setTravelers}
             onStyleChange={setStyle}
             onCalculate={handleCalculate}
-            isDestinationLocked={!!defaultDestination}
           />
         </CardContent>
       </Card>
@@ -77,7 +64,7 @@ export function TripCalculator({ defaultDestination, autoCalculate = false }: Tr
       {/* Results */}
       {showResults && results && selectedDestination && (
         <>
-          <Card className="border-border/50 bg-card">
+          <Card className="border-border bg-card shadow-sm">
             <CardContent className="p-6">
               <h3 className="mb-4 text-lg font-semibold text-foreground">
                 Procena troškova za {selectedDestination.name}
@@ -93,7 +80,7 @@ export function TripCalculator({ defaultDestination, autoCalculate = false }: Tr
           {/* Miško Quotes */}
           <div className="space-y-4">
             <MiskoQuote
-              quote="Osiguranje je manje od 1% ukupnog troška — a pokriva medicinske račune do €30,000."
+              quote="Putno osiguranje pokriva medicinske troškove u inostranstvu — do €30,000 pokrića za mali deo ukupnog budžeta."
             />
             <MiskoQuote
               quote={selectedDestination.miskoTip}
@@ -102,7 +89,7 @@ export function TripCalculator({ defaultDestination, autoCalculate = false }: Tr
           </div>
 
           {/* CTA Section */}
-          <Card className="border-primary/30 bg-card">
+          <Card className="border-primary/30 bg-card shadow-sm">
             <CardContent className="space-y-6 p-6">
               <Button
                 asChild
