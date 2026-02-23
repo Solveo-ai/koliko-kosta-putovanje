@@ -1,4 +1,4 @@
-import { Destination, InsuranceTier } from '@/data/destinations';
+import { Destination, AccommodationLevel } from '@/data/destinations';
 
 // Insurance rates in EUR per person per day — Serbian insurers, mid-package (~30,000€ coverage)
 // Indexed by zone: 0=Balkans/SEE, 1=Europe, 2=World
@@ -67,26 +67,34 @@ function buildBreakdown(
   };
 }
 
+function getAccomRate(destination: Destination, level: AccommodationLevel): number {
+  switch (level) {
+    case 'budget': return destination.accommodationBudget;
+    case 'luxury': return destination.accommodationLuxury;
+    default: return destination.accommodationMid;
+  }
+}
+
 export function calculateCosts(
   destination: Destination,
   days: number,
   travelers: number,
-  _tier: InsuranceTier,
+  accomLevel: AccommodationLevel,
   flightType: 'budget' | 'avg' = 'budget',
 ): CalcResult {
   const avgRate = getAvgInsuranceRate(destination.insZone);
-  const accomMid = destination.accommodationMid;
+  const accomRate = getAccomRate(destination, accomLevel);
 
   // Plane breakdowns for both flight types
-  const planeBudget = buildBreakdown(destination.flightBudget, accomMid, avgRate, days, travelers);
-  const planeAvg = buildBreakdown(destination.flightAvg, accomMid, avgRate, days, travelers);
+  const planeBudget = buildBreakdown(destination.flightBudget, accomRate, avgRate, days, travelers);
+  const planeAvg = buildBreakdown(destination.flightAvg, accomRate, avgRate, days, travelers);
   const plane = flightType === 'budget' ? planeBudget : planeAvg;
 
   // Car breakdown
   let car: TransportBreakdown | null = null;
   if (destination.carTotal !== null) {
     const carPP = destination.carTotal / travelers;
-    car = buildBreakdown(carPP, accomMid, avgRate, days, travelers);
+    car = buildBreakdown(carPP, accomRate, avgRate, days, travelers);
   }
 
   // Savings comparison (plane budget vs car)

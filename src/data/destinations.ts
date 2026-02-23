@@ -20,7 +20,7 @@ export type DestinationId =
   | 'uae'
   | 'gruzija';
 
-export type InsuranceTier = 'budget' | 'standard' | 'premium';
+export type AccommodationLevel = 'budget' | 'mid' | 'luxury';
 
 export interface Destination {
   id: DestinationId;
@@ -370,26 +370,26 @@ export const destinationGroups = [
   { label: '🌍 Long-Haul & Emerging', destinations: destinationList.filter(d => d.group === 'Long-Haul & Emerging') },
 ];
 
-export interface InsuranceTierInfo {
-  id: InsuranceTier;
+export interface AccommodationLevelInfo {
+  id: AccommodationLevel;
   label: string;
   description: string;
 }
 
-export const insuranceTiers: InsuranceTierInfo[] = [
+export const accommodationLevels: AccommodationLevelInfo[] = [
   {
     id: 'budget',
     label: 'Budget',
-    description: '~€15,000 pokriće',
+    description: 'Hostel · 1★-2★',
   },
   {
-    id: 'standard',
-    label: 'Standard',
-    description: '~€30,000 pokriće',
+    id: 'mid',
+    label: 'Mid-range',
+    description: '3★ hotel',
   },
   {
-    id: 'premium',
-    label: 'Premium',
-    description: '~€40-60,000 pokriće',
+    id: 'luxury',
+    label: 'Luxury',
+    description: '4★-5★ hotel',
   },
 ];

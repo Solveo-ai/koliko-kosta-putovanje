@@ -11,17 +11,17 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { destinationGroups, insuranceTiers, DestinationId, InsuranceTier } from '@/data/destinations';
+import { destinationGroups, accommodationLevels, DestinationId, AccommodationLevel } from '@/data/destinations';
 
 interface TripCalculatorFormProps {
   destination: DestinationId | '';
   days: number;
   travelers: number;
-  tier: InsuranceTier;
+  accomLevel: AccommodationLevel;
   onDestinationChange: (value: DestinationId) => void;
   onDaysChange: (value: number) => void;
   onTravelersChange: (value: number) => void;
-  onTierChange: (value: InsuranceTier) => void;
+  onAccomLevelChange: (value: AccommodationLevel) => void;
   onCalculate: () => void;
 }
 
@@ -29,11 +29,11 @@ export function TripCalculatorForm({
   destination,
   days,
   travelers,
-  tier,
+  accomLevel,
   onDestinationChange,
   onDaysChange,
   onTravelersChange,
-  onTierChange,
+  onAccomLevelChange,
   onCalculate,
 }: TripCalculatorFormProps) {
   return (
@@ -103,16 +103,16 @@ export function TripCalculatorForm({
         </Select>
       </div>
 
-      {/* Insurance tier toggle */}
+      {/* Accommodation level toggle */}
       <div className="space-y-3">
-        <Label className="text-sm font-medium text-foreground">Nivo osiguranja</Label>
+        <Label className="text-sm font-medium text-foreground">Nivo smeštaja</Label>
         <ToggleGroup
           type="single"
-          value={tier}
-          onValueChange={(v) => { if (v) onTierChange(v as InsuranceTier); }}
+          value={accomLevel}
+          onValueChange={(v) => { if (v) onAccomLevelChange(v as AccommodationLevel); }}
           className="w-full"
         >
-          {insuranceTiers.map((t) => (
+          {accommodationLevels.map((t) => (
             <ToggleGroupItem key={t.id} value={t.id} className="flex-1 flex-col gap-0.5 py-3">
               <span className="text-sm font-medium">{t.label}</span>
               <span className="text-[10px] text-muted-foreground">{t.description}</span>
