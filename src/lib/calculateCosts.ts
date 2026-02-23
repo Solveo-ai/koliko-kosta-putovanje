@@ -19,6 +19,25 @@ export interface CostItem {
   showInTotal?: boolean;
 }
 
+// Insurance rates in EUR per person per day — Serbian insurers
+// Indexed as [zoneIndex][tierIndex] where zone: 0=Balkans, 1=Europe, 2=World; tier: 0=budget, 1=standard, 2=premium
+const INSURANCE_RATES: Record<string, number[][]> = {
+  grawe:    [[0.85, 1.20, 2.50], [1.20, 1.80, 3.50], [1.85, 2.80, 5.50]],
+  sava:     [[1.00, 1.50, 2.80], [1.40, 2.10, 3.90], [2.20, 3.20, 6.20]],
+  wiener:   [[1.10, 1.60, 3.00], [1.55, 2.25, 4.20], [2.40, 3.50, 6.80]],
+  uniqa:    [[1.30, 1.90, 3.50], [1.80, 2.60, 4.80], [2.80, 4.00, 7.50]],
+  generali: [[1.40, 2.00, 3.80], [1.90, 2.80, 5.20], [3.00, 4.40, 8.20]],
+};
+
+const EUR_TO_RSD = 117;
+
+function getInsuranceAvgRate(insZone: number, style: TravelStyle): number {
+  const tierIndex = style === 'budget' ? 0 : style === 'comfort' ? 2 : 1;
+  const zoneIndex = insZone - 1; // zone 1,2,3 → index 0,1,2
+  const rates = Object.values(INSURANCE_RATES).map(r => r[zoneIndex][tierIndex]);
+  return rates.reduce((a, b) => a + b, 0) / rates.length;
+}
+
 export function calculateCosts(
   destination: Destination,
   days: number,
@@ -44,10 +63,11 @@ export function calculateCosts(
   // SIM/Data: flat rate per trip (0 for EU countries)
   const sim = costs.isEU ? 0 : costs.sim;
 
-  // Insurance: per person (display only, not in total)
-  const insurance = costs.insurance;
+  // Insurance: average rate across 5 Serbian insurers × days, per person (in RSD)
+  const insuranceRateEur = getInsuranceAvgRate(costs.insZone, style);
+  const insurance = Math.round(insuranceRateEur * days * EUR_TO_RSD);
 
-  // Total excludes insurance
+  // Total excludes insurance (insurance shown separately per person)
   const total = flights + accommodation + food + transport + sim;
 
   return {
