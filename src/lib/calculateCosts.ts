@@ -1,5 +1,13 @@
 import { Destination, TravelStyle } from '@/data/destinations';
 
+export interface InsuranceDetails {
+  cheapestName: string;
+  cheapestTotal: number;
+  expensiveName: string;
+  expensiveTotal: number;
+  averageTotal: number;
+}
+
 export interface CostBreakdown {
   flights: number;
   accommodation: number;
@@ -7,35 +15,53 @@ export interface CostBreakdown {
   transport: number;
   sim: number;
   insurance: number;
+  insuranceDetails: InsuranceDetails;
   total: number;
 }
 
 export interface CostItem {
-  id: keyof Omit<CostBreakdown, 'total'>;
+  id: keyof Omit<CostBreakdown, 'total' | 'insuranceDetails'>;
   icon: string;
   label: string;
   value: number;
   isPerPerson?: boolean;
   showInTotal?: boolean;
+  insuranceDetails?: InsuranceDetails;
 }
 
 // Insurance rates in EUR per person per day — Serbian insurers
 // Indexed as [zoneIndex][tierIndex] where zone: 0=Balkans, 1=Europe, 2=World; tier: 0=budget, 1=standard, 2=premium
-const INSURANCE_RATES: Record<string, number[][]> = {
-  grawe:    [[0.85, 1.20, 2.50], [1.20, 1.80, 3.50], [1.85, 2.80, 5.50]],
-  sava:     [[1.00, 1.50, 2.80], [1.40, 2.10, 3.90], [2.20, 3.20, 6.20]],
-  wiener:   [[1.10, 1.60, 3.00], [1.55, 2.25, 4.20], [2.40, 3.50, 6.80]],
-  uniqa:    [[1.30, 1.90, 3.50], [1.80, 2.60, 4.80], [2.80, 4.00, 7.50]],
-  generali: [[1.40, 2.00, 3.80], [1.90, 2.80, 5.20], [3.00, 4.40, 8.20]],
+const INSURANCE_RATES: Record<string, { name: string; rates: number[][] }> = {
+  grawe:    { name: 'Grawe',    rates: [[0.85, 1.20, 2.50], [1.20, 1.80, 3.50], [1.85, 2.80, 5.50]] },
+  sava:     { name: 'Sava',     rates: [[1.00, 1.50, 2.80], [1.40, 2.10, 3.90], [2.20, 3.20, 6.20]] },
+  wiener:   { name: 'Wiener',   rates: [[1.10, 1.60, 3.00], [1.55, 2.25, 4.20], [2.40, 3.50, 6.80]] },
+  uniqa:    { name: 'Uniqa',    rates: [[1.30, 1.90, 3.50], [1.80, 2.60, 4.80], [2.80, 4.00, 7.50]] },
+  generali: { name: 'Generali', rates: [[1.40, 2.00, 3.80], [1.90, 2.80, 5.20], [3.00, 4.40, 8.20]] },
 };
 
 const EUR_TO_RSD = 117;
 
-function getInsuranceAvgRate(insZone: number, style: TravelStyle): number {
+function getInsuranceDetails(insZone: number, style: TravelStyle, days: number): InsuranceDetails {
   const tierIndex = style === 'budget' ? 0 : style === 'comfort' ? 2 : 1;
-  const zoneIndex = insZone - 1; // zone 1,2,3 → index 0,1,2
-  const rates = Object.values(INSURANCE_RATES).map(r => r[zoneIndex][tierIndex]);
-  return rates.reduce((a, b) => a + b, 0) / rates.length;
+  const zoneIndex = insZone - 1;
+
+  const insurerRates = Object.values(INSURANCE_RATES).map(ins => ({
+    name: ins.name,
+    rate: ins.rates[zoneIndex][tierIndex],
+  }));
+
+  insurerRates.sort((a, b) => a.rate - b.rate);
+  const cheapest = insurerRates[0];
+  const expensive = insurerRates[insurerRates.length - 1];
+  const avgRate = insurerRates.reduce((s, r) => s + r.rate, 0) / insurerRates.length;
+
+  return {
+    cheapestName: cheapest.name,
+    cheapestTotal: Math.round(cheapest.rate * days * EUR_TO_RSD),
+    expensiveName: expensive.name,
+    expensiveTotal: Math.round(expensive.rate * days * EUR_TO_RSD),
+    averageTotal: Math.round(avgRate * days * EUR_TO_RSD),
+  };
 }
 
 export function calculateCosts(
@@ -48,26 +74,15 @@ export function calculateCosts(
   const rooms = Math.ceil(travelers / 2);
   const nights = days - 1;
 
-  // Flights: cost per person × travelers (flat, doesn't scale with duration)
   const flights = costs.flight[style] * travelers;
-
-  // Accommodation: cost per night × nights × rooms
   const accommodation = costs.accommodation[style] * nights * rooms;
-
-  // Food: cost per day × days × travelers
   const food = costs.food[style] * days * travelers;
-
-  // Local transport: cost per day × days (shared, not multiplied by travelers)
   const transport = costs.transport[style] * days;
-
-  // SIM/Data: flat rate per trip (0 for EU countries)
   const sim = costs.isEU ? 0 : costs.sim;
 
-  // Insurance: average rate across 5 Serbian insurers × days, per person (in RSD)
-  const insuranceRateEur = getInsuranceAvgRate(costs.insZone, style);
-  const insurance = Math.round(insuranceRateEur * days * EUR_TO_RSD);
+  const insuranceDetails = getInsuranceDetails(costs.insZone, style, days);
+  const insurance = insuranceDetails.averageTotal;
 
-  // Total excludes insurance (insurance shown separately per person)
   const total = flights + accommodation + food + transport + sim;
 
   return {
@@ -77,6 +92,7 @@ export function calculateCosts(
     transport,
     sim,
     insurance,
+    insuranceDetails,
     total,
   };
 }
@@ -89,12 +105,10 @@ export function getCostItems(breakdown: CostBreakdown, isEU: boolean): CostItem[
     { id: 'transport', icon: '🚌', label: 'Prevoz', value: breakdown.transport, showInTotal: true },
   ];
 
-  // Only show SIM for non-EU countries
   if (!isEU && breakdown.sim > 0) {
     items.push({ id: 'sim', icon: '📱', label: 'SIM / Internet', value: breakdown.sim, showInTotal: true });
   }
 
-  // Insurance always shown last, marked as per person
   items.push({
     id: 'insurance',
     icon: '🏥',
@@ -102,6 +116,7 @@ export function getCostItems(breakdown: CostBreakdown, isEU: boolean): CostItem[
     value: breakdown.insurance,
     isPerPerson: true,
     showInTotal: false,
+    insuranceDetails: breakdown.insuranceDetails,
   });
 
   return items;

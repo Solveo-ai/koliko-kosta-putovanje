@@ -65,9 +65,17 @@ export function CostResults({ items, total, isVisible }: CostResultsProps) {
             </span>
           </div>
           <span className="text-sm font-semibold text-foreground md:text-base">
-            {item.isPerPerson ? (
-              <span className="text-muted-foreground">
-                od {formatCurrency(item.value)}/osoba
+            {item.insuranceDetails ? (
+              <span className="flex flex-col items-end gap-0.5 text-right">
+                <span className="text-xs text-muted-foreground">
+                  od {formatCurrency(item.insuranceDetails.cheapestTotal)}/os ({item.insuranceDetails.cheapestName})
+                </span>
+                <span className="text-foreground">
+                  ~{formatCurrency(item.insuranceDetails.averageTotal)}/os <span className="text-xs text-muted-foreground">prosek</span>
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  do {formatCurrency(item.insuranceDetails.expensiveTotal)}/os ({item.insuranceDetails.expensiveName})
+                </span>
               </span>
             ) : item.value > 0 ? (
               `~${formatCurrency(item.value)}`
