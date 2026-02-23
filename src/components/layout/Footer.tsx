@@ -8,6 +8,9 @@ export function Footer() {
         <p className="mt-2 text-xs text-muted-foreground">
           Podaci su okvirne procene i mogu varirati u zavisnosti od datuma, dostupnosti i drugih faktora.
         </p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Travel Cost + Insurance Intelligence · February 2026 · Grawe · Wiener · Sava · Generali · Uniqa · Google Flights · BudgetYourTrip · Tolls.eu
+        </p>
       </div>
     </footer>
   );

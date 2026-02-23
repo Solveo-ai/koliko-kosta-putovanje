@@ -1,15 +1,15 @@
-export type DestinationId = 
-  | 'grcka' 
+export type DestinationId =
+  | 'grcka'
   | 'crna-gora'
-  | 'turska' 
-  | 'egipat' 
+  | 'turska'
+  | 'egipat'
   | 'tunis'
   | 'bugarska'
   | 'hrvatska'
   | 'albanija'
   | 'kipar'
   | 'italija'
-  | 'spanija' 
+  | 'spanija'
   | 'austrija'
   | 'madjarska'
   | 'bosna'
@@ -20,379 +20,376 @@ export type DestinationId =
   | 'uae'
   | 'gruzija';
 
-export type TravelStyle = 'budget' | 'midrange' | 'comfort';
-
-export interface DestinationCosts {
-  flight: { budget: number; midrange: number; comfort: number };
-  accommodation: { budget: number; midrange: number; comfort: number };
-  food: { budget: number; midrange: number; comfort: number };
-  transport: { budget: number; midrange: number; comfort: number };
-  sim: number;
-  insurance: number;
-  isEU: boolean;
-  insZone: number; // 1=Balkans/SEE, 2=Europe, 3=World
-}
+export type InsuranceTier = 'budget' | 'standard' | 'premium';
 
 export interface Destination {
   id: DestinationId;
   name: string;
-  costs: DestinationCosts;
+  subtitle: string;
+  group: 'Mediterranean & Beach' | 'European City Breaks' | 'Long-Haul & Emerging';
+  flightBudget: number;    // EUR per person, budget LCC round-trip
+  flightAvg: number;       // EUR per person, mid-season average round-trip
+  carTotal: number | null; // EUR round-trip total per vehicle, null if not drivable
+  carKm: string | null;
+  carRoute: string | null;
+  accommodationBudget: number; // EUR per person per night
+  accommodationMid: number;
+  accommodationLuxury: number;
+  insZone: 1 | 2 | 3;     // 1=Balkans/SEE, 2=Europe, 3=World
   miskoTip: string;
-  comparisonUrl: string;
 }
-
-// Exchange rate: 1 EUR = 117 RSD
-// Flight budget = off-peak LCC per person, midrange = mid-season average, comfort = midrange × 1.8
-// Accommodation: per room per night
-// Insurance zone: 1=Balkans/SEE, 2=Europe, 3=World
-// Data sources: Expedia, Google Flights, Kayak, Momondo, BudgetYourTrip, Booking.com,
-// Grawe.rs, Wiener.co.rs, Sava-osiguranje.rs, Generali.rs, Uniqa.rs (Feb 2026)
 
 export const destinations: Record<DestinationId, Destination> = {
   'grcka': {
     id: 'grcka',
     name: 'Grčka',
-    costs: {
-      flight: { budget: 15210, midrange: 24570, comfort: 44226 },
-      accommodation: { budget: 5265, midrange: 11700, comfort: 32760 },
-      food: { budget: 2500, midrange: 4500, comfort: 8000 },
-      transport: { budget: 800, midrange: 1500, comfort: 3000 },
-      sim: 0,
-      insurance: 350,
-      isEU: true,
-      insZone: 1,
-    },
+    subtitle: 'Halkidiki · Thassos · Corfu',
+    group: 'Mediterranean & Beach',
+    flightBudget: 130,
+    flightAvg: 210,
+    carTotal: 120,
+    carKm: '~820 km',
+    carRoute: 'via N. Macedonia (Evzoni)',
+    accommodationBudget: 45,
+    accommodationMid: 100,
+    accommodationLuxury: 280,
+    insZone: 1,
     miskoTip: 'U Grčkoj, poseta lekaru bez osiguranja može koštati €80-300. Sa osiguranjem: 0 din.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=grcka',
   },
   'crna-gora': {
     id: 'crna-gora',
     name: 'Crna Gora',
-    costs: {
-      flight: { budget: 14040, midrange: 21060, comfort: 37908 },
-      accommodation: { budget: 3510, midrange: 8190, comfort: 23400 },
-      food: { budget: 2000, midrange: 3500, comfort: 6500 },
-      transport: { budget: 500, midrange: 1000, comfort: 2000 },
-      sim: 0,
-      insurance: 300,
-      isEU: false,
-      insZone: 1,
-    },
+    subtitle: 'Budva · Bar · Kotor',
+    group: 'Mediterranean & Beach',
+    flightBudget: 120,
+    flightAvg: 180,
+    carTotal: 80,
+    carKm: '~450 km',
+    carRoute: 'via S. Serbia',
+    accommodationBudget: 30,
+    accommodationMid: 70,
+    accommodationLuxury: 200,
+    insZone: 1,
     miskoTip: 'Crna Gora je blizu, ali bolnički troškovi mogu biti iznenađujuće visoki.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=crna-gora',
   },
   'turska': {
     id: 'turska',
     name: 'Turska',
-    costs: {
-      flight: { budget: 20475, midrange: 29835, comfort: 53703 },
-      accommodation: { budget: 4095, midrange: 8775, comfort: 23400 },
-      food: { budget: 2000, midrange: 3500, comfort: 6500 },
-      transport: { budget: 600, midrange: 1200, comfort: 2500 },
-      sim: 1500,
-      insurance: 400,
-      isEU: false,
-      insZone: 2,
-    },
+    subtitle: 'Antalya · Istanbul · Izmir',
+    group: 'Mediterranean & Beach',
+    flightBudget: 175,
+    flightAvg: 255,
+    carTotal: null,
+    carKm: null,
+    carRoute: null,
+    accommodationBudget: 35,
+    accommodationMid: 75,
+    accommodationLuxury: 200,
+    insZone: 2,
     miskoTip: 'U Turskoj, bolnički dan može koštati i do €500. Putno osiguranje pokriva medicinske troškove.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=turska',
   },
   'egipat': {
     id: 'egipat',
     name: 'Egipat',
-    costs: {
-      flight: { budget: 23400, midrange: 37440, comfort: 67392 },
-      accommodation: { budget: 2925, midrange: 7020, comfort: 21060 },
-      food: { budget: 1500, midrange: 3000, comfort: 6000 },
-      transport: { budget: 500, midrange: 1000, comfort: 2000 },
-      sim: 1000,
-      insurance: 450,
-      isEU: false,
-      insZone: 3,
-    },
+    subtitle: 'Hurghada · Sharm el-Sheikh',
+    group: 'Mediterranean & Beach',
+    flightBudget: 200,
+    flightAvg: 320,
+    carTotal: null,
+    carKm: null,
+    carRoute: null,
+    accommodationBudget: 25,
+    accommodationMid: 60,
+    accommodationLuxury: 180,
+    insZone: 3,
     miskoTip: 'Egipat nema ugovor o zdravstvenom osiguranju sa Srbijom. Bez polise, svi troškovi lečenja su tvoji.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=egipat',
   },
   'tunis': {
     id: 'tunis',
     name: 'Tunis',
-    costs: {
-      flight: { budget: 22230, midrange: 35100, comfort: 63180 },
-      accommodation: { budget: 3276, midrange: 7020, comfort: 18720 },
-      food: { budget: 1500, midrange: 2800, comfort: 5500 },
-      transport: { budget: 400, midrange: 900, comfort: 2000 },
-      sim: 1200,
-      insurance: 450,
-      isEU: false,
-      insZone: 3,
-    },
+    subtitle: 'Hammamet · Sousse · Monastir',
+    group: 'Mediterranean & Beach',
+    flightBudget: 190,
+    flightAvg: 300,
+    carTotal: null,
+    carKm: null,
+    carRoute: null,
+    accommodationBudget: 28,
+    accommodationMid: 60,
+    accommodationLuxury: 160,
+    insZone: 3,
     miskoTip: 'Tunis nema zdravstveni sporazum sa Srbijom - osiguranje je obavezno.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=tunis',
   },
   'bugarska': {
     id: 'bugarska',
     name: 'Bugarska',
-    costs: {
-      flight: { budget: 9360, midrange: 16965, comfort: 30537 },
-      accommodation: { budget: 3510, midrange: 7020, comfort: 17550 },
-      food: { budget: 1800, midrange: 3000, comfort: 5500 },
-      transport: { budget: 500, midrange: 1000, comfort: 2000 },
-      sim: 0,
-      insurance: 300,
-      isEU: true,
-      insZone: 1,
-    },
+    subtitle: 'Sunny Beach · Varna · Bansko',
+    group: 'Mediterranean & Beach',
+    flightBudget: 80,
+    flightAvg: 145,
+    carTotal: 55,
+    carKm: '~330 km',
+    carRoute: 'via Kalotina border',
+    accommodationBudget: 30,
+    accommodationMid: 60,
+    accommodationLuxury: 150,
+    insZone: 1,
     miskoTip: 'Bugarska je EU, ali medicinski troškovi za strance mogu biti visoki.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=bugarska',
   },
   'hrvatska': {
     id: 'hrvatska',
     name: 'Hrvatska',
-    costs: {
-      flight: { budget: 11700, midrange: 22815, comfort: 41067 },
-      accommodation: { budget: 6435, midrange: 12870, comfort: 31590 },
-      food: { budget: 2500, midrange: 4000, comfort: 7000 },
-      transport: { budget: 600, midrange: 1200, comfort: 2500 },
-      sim: 0,
-      insurance: 320,
-      isEU: true,
-      insZone: 1,
-    },
+    subtitle: 'Istria · Split · Dubrovnik',
+    group: 'Mediterranean & Beach',
+    flightBudget: 100,
+    flightAvg: 195,
+    carTotal: 110,
+    carKm: '~550–650 km',
+    carRoute: 'via Bosnia / Slovenia',
+    accommodationBudget: 55,
+    accommodationMid: 110,
+    accommodationLuxury: 270,
+    insZone: 1,
     miskoTip: 'Hrvatska je EU članica, ali privatne klinike naplaćuju i do €300 po poseti.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=hrvatska',
   },
   'albanija': {
     id: 'albanija',
     name: 'Albanija',
-    costs: {
-      flight: { budget: 11700, midrange: 21645, comfort: 38961 },
-      accommodation: { budget: 3276, midrange: 7020, comfort: 18135 },
-      food: { budget: 1500, midrange: 2500, comfort: 5000 },
-      transport: { budget: 400, midrange: 800, comfort: 1800 },
-      sim: 800,
-      insurance: 350,
-      isEU: false,
-      insZone: 1,
-    },
+    subtitle: 'Saranda · Vlorë · Durrës',
+    group: 'Mediterranean & Beach',
+    flightBudget: 100,
+    flightAvg: 185,
+    carTotal: 88,
+    carKm: '~550 km',
+    carRoute: 'via Kosovo / N. Macedonia',
+    accommodationBudget: 28,
+    accommodationMid: 60,
+    accommodationLuxury: 155,
+    insZone: 1,
     miskoTip: 'Albanija nema sporazum o zdravstvenoj zaštiti sa Srbijom.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=albanija',
   },
   'kipar': {
     id: 'kipar',
     name: 'Kipar',
-    costs: {
-      flight: { budget: 17550, midrange: 29250, comfort: 52650 },
-      accommodation: { budget: 5850, midrange: 12285, comfort: 30420 },
-      food: { budget: 2500, midrange: 4500, comfort: 8000 },
-      transport: { budget: 700, midrange: 1400, comfort: 3000 },
-      sim: 0,
-      insurance: 350,
-      isEU: true,
-      insZone: 2,
-    },
+    subtitle: 'Paphos · Limassol',
+    group: 'Mediterranean & Beach',
+    flightBudget: 150,
+    flightAvg: 250,
+    carTotal: null,
+    carKm: null,
+    carRoute: null,
+    accommodationBudget: 50,
+    accommodationMid: 105,
+    accommodationLuxury: 260,
+    insZone: 2,
     miskoTip: 'Kipar je EU, ali medicinski troškovi mogu biti iznenađujuće visoki.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=kipar',
   },
   'italija': {
     id: 'italija',
     name: 'Italija',
-    costs: {
-      flight: { budget: 9711, midrange: 22230, comfort: 40014 },
-      accommodation: { budget: 7605, midrange: 15795, comfort: 42120 },
-      food: { budget: 2800, midrange: 4800, comfort: 8500 },
-      transport: { budget: 900, midrange: 1800, comfort: 3500 },
-      sim: 0,
-      insurance: 350,
-      isEU: true,
-      insZone: 2,
-    },
+    subtitle: 'Rome · Florence · Puglia',
+    group: 'European City Breaks',
+    flightBudget: 83,
+    flightAvg: 190,
+    carTotal: 195,
+    carKm: '~1,100 km',
+    carRoute: 'via Slovenia; Italy tolls',
+    accommodationBudget: 65,
+    accommodationMid: 135,
+    accommodationLuxury: 360,
+    insZone: 2,
     miskoTip: 'Italija je EU, ali privatne klinike naplaćuju i do €400 po poseti.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=italija',
   },
   'spanija': {
     id: 'spanija',
     name: 'Španija',
-    costs: {
-      flight: { budget: 14040, midrange: 28665, comfort: 51597 },
-      accommodation: { budget: 7020, midrange: 14625, comfort: 36270 },
-      food: { budget: 3000, midrange: 5000, comfort: 9000 },
-      transport: { budget: 1000, midrange: 2000, comfort: 4000 },
-      sim: 0,
-      insurance: 380,
-      isEU: true,
-      insZone: 2,
-    },
+    subtitle: 'Barcelona · Madrid · Costa Brava',
+    group: 'European City Breaks',
+    flightBudget: 120,
+    flightAvg: 245,
+    carTotal: null,
+    carKm: '~2,200 km',
+    carRoute: 'Not practical',
+    accommodationBudget: 60,
+    accommodationMid: 125,
+    accommodationLuxury: 310,
+    insZone: 2,
     miskoTip: 'U Španiji, hitna pomoć može koštati €200+. Osiguranje ti štedi novce i brige.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=spanija',
   },
   'austrija': {
     id: 'austrija',
     name: 'Austrija',
-    costs: {
-      flight: { budget: 14040, midrange: 25740, comfort: 46332 },
-      accommodation: { budget: 7605, midrange: 14040, comfort: 37440 },
-      food: { budget: 3000, midrange: 5000, comfort: 9000 },
-      transport: { budget: 800, midrange: 1600, comfort: 3500 },
-      sim: 0,
-      insurance: 350,
-      isEU: true,
-      insZone: 2,
-    },
+    subtitle: 'Vienna · Salzburg · Alps',
+    group: 'European City Breaks',
+    flightBudget: 120,
+    flightAvg: 220,
+    carTotal: 112,
+    carKm: '~580 km',
+    carRoute: 'via Hungary + vignette',
+    accommodationBudget: 65,
+    accommodationMid: 120,
+    accommodationLuxury: 320,
+    insZone: 2,
     miskoTip: 'Austrija ima visoke medicinske troškove - osiguranje je preporučljivo.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=austrija',
   },
   'madjarska': {
     id: 'madjarska',
     name: 'Mađarska',
-    costs: {
-      flight: { budget: 9360, midrange: 18135, comfort: 32643 },
-      accommodation: { budget: 4680, midrange: 9360, comfort: 21645 },
-      food: { budget: 2000, midrange: 3500, comfort: 6000 },
-      transport: { budget: 600, midrange: 1200, comfort: 2500 },
-      sim: 0,
-      insurance: 320,
-      isEU: true,
-      insZone: 1,
-    },
+    subtitle: 'Budapest',
+    group: 'European City Breaks',
+    flightBudget: 80,
+    flightAvg: 155,
+    carTotal: 65,
+    carKm: '~360 km',
+    carRoute: '~3.5h from Belgrade',
+    accommodationBudget: 40,
+    accommodationMid: 80,
+    accommodationLuxury: 185,
+    insZone: 1,
     miskoTip: 'Mađarska je popularna destinacija, ali privatne klinike naplaćuju visoke cene.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=madjarska',
   },
   'bosna': {
     id: 'bosna',
     name: 'Bosna i Hercegovina',
-    costs: {
-      flight: { budget: 9360, midrange: 17550, comfort: 31590 },
-      accommodation: { budget: 4095, midrange: 8190, comfort: 19305 },
-      food: { budget: 1500, midrange: 3000, comfort: 5500 },
-      transport: { budget: 400, midrange: 800, comfort: 1500 },
-      sim: 0,
-      insurance: 300,
-      isEU: false,
-      insZone: 1,
-    },
+    subtitle: 'Sarajevo · Mostar · Jahorina',
+    group: 'European City Breaks',
+    flightBudget: 80,
+    flightAvg: 150,
+    carTotal: 55,
+    carKm: '~280 km',
+    carRoute: '~3h from Belgrade',
+    accommodationBudget: 35,
+    accommodationMid: 70,
+    accommodationLuxury: 165,
+    insZone: 1,
     miskoTip: 'BiH je blizu, ali nema zdravstveni sporazum sa Srbijom — osiguranje je preporučljivo.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=bosna',
   },
   'ceska': {
     id: 'ceska',
     name: 'Češka',
-    costs: {
-      flight: { budget: 12870, midrange: 25155, comfort: 45279 },
-      accommodation: { budget: 5850, midrange: 10530, comfort: 25740 },
-      food: { budget: 2500, midrange: 4500, comfort: 8000 },
-      transport: { budget: 700, midrange: 1500, comfort: 3000 },
-      sim: 0,
-      insurance: 350,
-      isEU: true,
-      insZone: 2,
-    },
+    subtitle: 'Prague · Karlovy Vary',
+    group: 'European City Breaks',
+    flightBudget: 110,
+    flightAvg: 215,
+    carTotal: 150,
+    carKm: '~900 km',
+    carRoute: 'via Hungary & Slovakia',
+    accommodationBudget: 50,
+    accommodationMid: 90,
+    accommodationLuxury: 220,
+    insZone: 2,
     miskoTip: 'Češka ima visoke medicinske troškove za strance bez osiguranja.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=ceska',
   },
   'nemacka': {
     id: 'nemacka',
     name: 'Nemačka',
-    costs: {
-      flight: { budget: 15210, midrange: 28080, comfort: 50544 },
-      accommodation: { budget: 7020, midrange: 13455, comfort: 31590 },
-      food: { budget: 3500, midrange: 6000, comfort: 11000 },
-      transport: { budget: 1000, midrange: 2000, comfort: 4000 },
-      sim: 0,
-      insurance: 380,
-      isEU: true,
-      insZone: 2,
-    },
+    subtitle: 'Berlin · Munich · Frankfurt',
+    group: 'European City Breaks',
+    flightBudget: 130,
+    flightAvg: 240,
+    carTotal: 235,
+    carKm: '~1,300 km',
+    carRoute: 'via Austria — long drive',
+    accommodationBudget: 60,
+    accommodationMid: 115,
+    accommodationLuxury: 270,
+    insZone: 2,
     miskoTip: 'Nemačka ima jedan od najskupljih zdravstvenih sistema — osiguranje je obavezno.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=nemacka',
   },
   'slovenija': {
     id: 'slovenija',
     name: 'Slovenija',
-    costs: {
-      flight: { budget: 11700, midrange: 22230, comfort: 40014 },
-      accommodation: { budget: 5616, midrange: 11466, comfort: 27495 },
-      food: { budget: 2500, midrange: 4500, comfort: 8500 },
-      transport: { budget: 700, midrange: 1400, comfort: 3000 },
-      sim: 0,
-      insurance: 350,
-      isEU: true,
-      insZone: 2,
-    },
+    subtitle: 'Ljubljana · Lake Bled',
+    group: 'European City Breaks',
+    flightBudget: 100,
+    flightAvg: 190,
+    carTotal: 118,
+    carKm: '~640 km',
+    carRoute: 'via Croatia + vignettes',
+    accommodationBudget: 48,
+    accommodationMid: 98,
+    accommodationLuxury: 235,
+    insZone: 2,
     miskoTip: 'Slovenija je EU članica, ali privatne klinike naplaćuju visoke cene.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=slovenija',
   },
   'francuska': {
     id: 'francuska',
     name: 'Francuska',
-    costs: {
-      flight: { budget: 17550, midrange: 38610, comfort: 69498 },
-      accommodation: { budget: 10530, midrange: 20475, comfort: 53820 },
-      food: { budget: 3500, midrange: 6000, comfort: 12000 },
-      transport: { budget: 1000, midrange: 2000, comfort: 4000 },
-      sim: 0,
-      insurance: 380,
-      isEU: true,
-      insZone: 2,
-    },
+    subtitle: 'Paris · Nice · Côte d\'Azur',
+    group: 'European City Breaks',
+    flightBudget: 150,
+    flightAvg: 330,
+    carTotal: null,
+    carKm: '~1,900 km',
+    carRoute: 'Not practical',
+    accommodationBudget: 90,
+    accommodationMid: 175,
+    accommodationLuxury: 460,
+    insZone: 2,
     miskoTip: 'Francuska ima jedan od najskupljih zdravstvenih sistema u Evropi.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=francuska',
   },
   'uae': {
     id: 'uae',
     name: 'UAE (Dubai)',
-    costs: {
-      flight: { budget: 40950, midrange: 56160, comfort: 101088 },
-      accommodation: { budget: 10530, midrange: 21060, comfort: 64350 },
-      food: { budget: 4000, midrange: 8000, comfort: 15000 },
-      transport: { budget: 1500, midrange: 3000, comfort: 6000 },
-      sim: 2000,
-      insurance: 500,
-      isEU: false,
-      insZone: 3,
-    },
+    subtitle: 'Dubai · Abu Dhabi',
+    group: 'Long-Haul & Emerging',
+    flightBudget: 350,
+    flightAvg: 480,
+    carTotal: null,
+    carKm: null,
+    carRoute: null,
+    accommodationBudget: 90,
+    accommodationMid: 180,
+    accommodationLuxury: 550,
+    insZone: 3,
     miskoTip: 'Dubai ima vrhunsku medicinsku negu, ali po veoma visokim cenama — osiguranje je obavezno.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=uae',
   },
   'gruzija': {
     id: 'gruzija',
     name: 'Gruzija',
-    costs: {
-      flight: { budget: 21060, midrange: 35100, comfort: 63180 },
-      accommodation: { budget: 3276, midrange: 7956, comfort: 19305 },
-      food: { budget: 1200, midrange: 2500, comfort: 5000 },
-      transport: { budget: 500, midrange: 1000, comfort: 2500 },
-      sim: 1500,
-      insurance: 450,
-      isEU: false,
-      insZone: 3,
-    },
+    subtitle: 'Tbilisi · Batumi · wine region',
+    group: 'Long-Haul & Emerging',
+    flightBudget: 180,
+    flightAvg: 300,
+    carTotal: null,
+    carKm: null,
+    carRoute: null,
+    accommodationBudget: 28,
+    accommodationMid: 68,
+    accommodationLuxury: 165,
+    insZone: 3,
     miskoTip: 'Gruzija nema zdravstveni sporazum sa Srbijom — putno osiguranje je obavezno.',
-    comparisonUrl: 'https://policymarket.rs/putno-osiguranje?destination=gruzija',
   },
 };
 
 export const destinationList = Object.values(destinations);
 
-export interface TravelStyleInfo {
-  id: TravelStyle;
+export const destinationGroups = [
+  { label: '🌊 Mediterranean & Beach', destinations: destinationList.filter(d => d.group === 'Mediterranean & Beach') },
+  { label: '🏙️ European City Breaks', destinations: destinationList.filter(d => d.group === 'European City Breaks') },
+  { label: '🌍 Long-Haul & Emerging', destinations: destinationList.filter(d => d.group === 'Long-Haul & Emerging') },
+];
+
+export interface InsuranceTierInfo {
+  id: InsuranceTier;
   label: string;
   description: string;
 }
 
-export const travelStyles: TravelStyleInfo[] = [
-  { 
-    id: 'budget', 
+export const insuranceTiers: InsuranceTierInfo[] = [
+  {
+    id: 'budget',
     label: 'Budget',
-    description: 'Hosteli, jeftini smeštaj, priprema hrane, javni prevoz'
+    description: '~€15,000 pokriće',
   },
-  { 
-    id: 'midrange', 
-    label: 'Mid-range',
-    description: 'Hoteli 3★, restorani srednje klase, kombinovan prevoz'
+  {
+    id: 'standard',
+    label: 'Standard',
+    description: '~€30,000 pokriće',
   },
-  { 
-    id: 'comfort', 
-    label: 'Komfor',
-    description: 'Hoteli 4-5★, fine dining, rent-a-car ili taksi'
+  {
+    id: 'premium',
+    label: 'Premium',
+    description: '~€40-60,000 pokriće',
   },
 ];

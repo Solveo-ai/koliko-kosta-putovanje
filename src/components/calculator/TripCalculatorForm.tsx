@@ -1,25 +1,27 @@
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { destinationList, travelStyles, DestinationId, TravelStyle } from '@/data/destinations';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { destinationGroups, insuranceTiers, DestinationId, InsuranceTier } from '@/data/destinations';
 
 interface TripCalculatorFormProps {
   destination: DestinationId | '';
   days: number;
   travelers: number;
-  style: TravelStyle;
+  tier: InsuranceTier;
   onDestinationChange: (value: DestinationId) => void;
   onDaysChange: (value: number) => void;
   onTravelersChange: (value: number) => void;
-  onStyleChange: (value: TravelStyle) => void;
+  onTierChange: (value: InsuranceTier) => void;
   onCalculate: () => void;
 }
 
@@ -27,16 +29,16 @@ export function TripCalculatorForm({
   destination,
   days,
   travelers,
-  style,
+  tier,
   onDestinationChange,
   onDaysChange,
   onTravelersChange,
-  onStyleChange,
+  onTierChange,
   onCalculate,
 }: TripCalculatorFormProps) {
   return (
     <div className="space-y-6">
-      {/* Destination */}
+      {/* Destination (grouped) */}
       <div className="space-y-2">
         <Label className="text-sm font-medium text-foreground">Destinacija</Label>
         <Select
@@ -47,10 +49,15 @@ export function TripCalculatorForm({
             <SelectValue placeholder="Izaberi destinaciju" />
           </SelectTrigger>
           <SelectContent>
-            {destinationList.map((dest) => (
-              <SelectItem key={dest.id} value={dest.id}>
-                {dest.name}
-              </SelectItem>
+            {destinationGroups.map((group) => (
+              <SelectGroup key={group.label}>
+                <SelectLabel>{group.label}</SelectLabel>
+                {group.destinations.map((dest) => (
+                  <SelectItem key={dest.id} value={dest.id}>
+                    {dest.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             ))}
           </SelectContent>
         </Select>
@@ -65,13 +72,13 @@ export function TripCalculatorForm({
         <Slider
           value={[days]}
           onValueChange={(value) => onDaysChange(value[0])}
-          min={3}
+          min={1}
           max={21}
           step={1}
           className="w-full"
         />
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span>3 dana</span>
+          <span>1 dan</span>
           <span>21 dan</span>
         </div>
       </div>
@@ -87,7 +94,7 @@ export function TripCalculatorForm({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {[1, 2, 3, 4, 5, 6].map((num) => (
+            {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
               <SelectItem key={num} value={num.toString()}>
                 {num} {num === 1 ? 'osoba' : num < 5 ? 'osobe' : 'osoba'}
               </SelectItem>
@@ -96,31 +103,22 @@ export function TripCalculatorForm({
         </Select>
       </div>
 
-      {/* Travel style */}
+      {/* Insurance tier toggle */}
       <div className="space-y-3">
-        <Label className="text-sm font-medium text-foreground">Stil putovanja</Label>
-        <RadioGroup
-          value={style}
-          onValueChange={(value) => onStyleChange(value as TravelStyle)}
-          className="grid gap-3"
+        <Label className="text-sm font-medium text-foreground">Nivo osiguranja</Label>
+        <ToggleGroup
+          type="single"
+          value={tier}
+          onValueChange={(v) => { if (v) onTierChange(v as InsuranceTier); }}
+          className="w-full"
         >
-          {travelStyles.map((s) => (
-            <div key={s.id} className="flex items-start">
-              <RadioGroupItem
-                value={s.id}
-                id={s.id}
-                className="peer sr-only"
-              />
-              <Label
-                htmlFor={s.id}
-                className="flex w-full cursor-pointer flex-col gap-1 rounded-lg border border-border bg-card px-4 py-3 transition-all peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-secondary hover:bg-muted"
-              >
-                <span className="font-medium text-foreground">{s.label}</span>
-                <span className="text-xs text-muted-foreground">{s.description}</span>
-              </Label>
-            </div>
+          {insuranceTiers.map((t) => (
+            <ToggleGroupItem key={t.id} value={t.id} className="flex-1 flex-col gap-0.5 py-3">
+              <span className="text-sm font-medium">{t.label}</span>
+              <span className="text-[10px] text-muted-foreground">{t.description}</span>
+            </ToggleGroupItem>
           ))}
-        </RadioGroup>
+        </ToggleGroup>
       </div>
 
       {/* Calculate button */}
