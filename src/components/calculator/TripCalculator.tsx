@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { destinations, DestinationId, TravelStyle } from '@/data/destinations';
-import { calculateCosts, getCostItems, CostBreakdown } from '@/lib/calculateCosts';
+import { destinations, DestinationId, InsuranceTier } from '@/data/destinations';
+import { calculateCosts, CalcResult } from '@/lib/calculateCosts';
 import { TripCalculatorForm } from './TripCalculatorForm';
 import { CostResults } from './CostResults';
 import { MiskoQuote } from './MiskoQuote';
@@ -12,31 +12,27 @@ export function TripCalculator() {
   const [destination, setDestination] = useState<DestinationId | ''>('');
   const [days, setDays] = useState(7);
   const [travelers, setTravelers] = useState(2);
-  const [style, setStyle] = useState<TravelStyle>('midrange');
-  const [results, setResults] = useState<CostBreakdown | null>(null);
+  const [tier, setTier] = useState<InsuranceTier>('standard');
+  const [flightType, setFlightType] = useState<'budget' | 'avg'>('budget');
+  const [results, setResults] = useState<CalcResult | null>(null);
   const [showResults, setShowResults] = useState(false);
 
   const selectedDestination = destination ? destinations[destination] : null;
 
   const handleCalculate = () => {
     if (!selectedDestination) return;
-    
-    const breakdown = calculateCosts(selectedDestination, days, travelers, style);
-    setResults(breakdown);
+    const result = calculateCosts(selectedDestination, days, travelers, tier, flightType);
+    setResults(result);
     setShowResults(true);
   };
 
   // Recalculate when inputs change if results are already showing
   useEffect(() => {
     if (showResults && selectedDestination) {
-      const breakdown = calculateCosts(selectedDestination, days, travelers, style);
-      setResults(breakdown);
+      const result = calculateCosts(selectedDestination, days, travelers, tier, flightType);
+      setResults(result);
     }
-  }, [destination, days, travelers, style, showResults]);
-
-  const costItems = results && selectedDestination 
-    ? getCostItems(results, selectedDestination.costs.isEU)
-    : [];
+  }, [destination, days, travelers, tier, flightType, showResults]);
 
   const comparisonUrl = selectedDestination
     ? `https://app-stg.policymarket.shop/sr-RS?utm_source=calculator&utm_medium=trip-cost&utm_campaign=${selectedDestination.id}`
@@ -51,11 +47,11 @@ export function TripCalculator() {
             destination={destination}
             days={days}
             travelers={travelers}
-            style={style}
+            tier={tier}
             onDestinationChange={setDestination}
             onDaysChange={setDays}
             onTravelersChange={setTravelers}
-            onStyleChange={setStyle}
+            onTierChange={setTier}
             onCalculate={handleCalculate}
           />
         </CardContent>
@@ -70,9 +66,11 @@ export function TripCalculator() {
                 Procena troškova za {selectedDestination.name}
               </h3>
               <CostResults
-                items={costItems}
-                total={results.total}
-                isVisible={showResults}
+                result={results}
+                destination={selectedDestination}
+                travelers={travelers}
+                flightType={flightType}
+                onFlightTypeChange={setFlightType}
               />
             </CardContent>
           </Card>

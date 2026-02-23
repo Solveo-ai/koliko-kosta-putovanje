@@ -18,7 +18,7 @@ export default function KolikoKostaPutovanje() {
               Koliko košta tvoje putovanje?
             </h1>
             <p className="mb-8 text-base text-muted-foreground md:text-lg">
-              Izaberi destinaciju i saznaj okvirne troškove za letove, smeštaj, hranu i prevoz.
+              Izaberi destinaciju i saznaj okvirne troškove za prevoz, smeštaj i osiguranje.
             </p>
           </div>
 

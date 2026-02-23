@@ -1,66 +1,69 @@
-import { Destination, TravelStyle } from '@/data/destinations';
+import { Destination, InsuranceTier } from '@/data/destinations';
 
-export interface InsuranceDetails {
-  cheapestName: string;
-  cheapestTotal: number;
-  expensiveName: string;
-  expensiveTotal: number;
-  averageTotal: number;
+// Insurance rates in EUR per person per day — Serbian insurers, mid-package (~30,000€ coverage)
+// Indexed by zone: 0=Balkans/SEE, 1=Europe, 2=World
+export const INSURANCE_RATES: Record<string, { name: string; rates: [number, number, number] }> = {
+  generali: { name: 'Generali', rates: [1.40, 2.00, 4.00] },
+  grawe:    { name: 'Grawe',    rates: [0.85, 1.20, 2.50] },
+  sava:     { name: 'Sava',     rates: [1.00, 1.50, 2.90] },
+  uniqa:    { name: 'Uniqa',    rates: [1.30, 1.90, 3.80] },
+  wiener:   { name: 'Wiener',   rates: [1.10, 1.60, 3.20] },
+};
+
+export interface TransportBreakdown {
+  transportPP: number;
+  accommodationPP: number;
+  insurancePP: number;
+  totalPP: number;
+  totalGroup: number;
 }
 
-export interface CostBreakdown {
-  flights: number;
-  accommodation: number;
-  food: number;
-  transport: number;
-  sim: number;
-  insurance: number;
-  insuranceDetails: InsuranceDetails;
+export interface InsurerRow {
+  name: string;
+  dailyRate: number;
   total: number;
 }
 
-export interface CostItem {
-  id: keyof Omit<CostBreakdown, 'total' | 'insuranceDetails'>;
-  icon: string;
-  label: string;
-  value: number;
-  isPerPerson?: boolean;
-  showInTotal?: boolean;
-  insuranceDetails?: InsuranceDetails;
+export interface AccommodationTier {
+  tier: string;
+  perNight: number;
+  total: number;
 }
 
-// Insurance rates in EUR per person per day — Serbian insurers
-// Indexed as [zoneIndex][tierIndex] where zone: 0=Balkans, 1=Europe, 2=World; tier: 0=budget, 1=standard, 2=premium
-const INSURANCE_RATES: Record<string, { name: string; rates: number[][] }> = {
-  grawe:    { name: 'Grawe',    rates: [[0.85, 1.20, 2.50], [1.20, 1.80, 3.50], [1.85, 2.80, 5.50]] },
-  sava:     { name: 'Sava',     rates: [[1.00, 1.50, 2.80], [1.40, 2.10, 3.90], [2.20, 3.20, 6.20]] },
-  wiener:   { name: 'Wiener',   rates: [[1.10, 1.60, 3.00], [1.55, 2.25, 4.20], [2.40, 3.50, 6.80]] },
-  uniqa:    { name: 'Uniqa',    rates: [[1.30, 1.90, 3.50], [1.80, 2.60, 4.80], [2.80, 4.00, 7.50]] },
-  generali: { name: 'Generali', rates: [[1.40, 2.00, 3.80], [1.90, 2.80, 5.20], [3.00, 4.40, 8.20]] },
-};
+export interface CalcResult {
+  plane: TransportBreakdown;
+  planeBudget: TransportBreakdown; // budget LCC flight
+  planeAvg: TransportBreakdown;   // average flight
+  car: TransportBreakdown | null;
+  savingsPP: number | null;
+  cheaperOption: 'plane' | 'car' | null;
+  insurerTable: InsurerRow[];
+  accommodationTiers: AccommodationTier[];
+  avgInsuranceRate: number;
+}
 
-const EUR_TO_RSD = 117;
-
-function getInsuranceDetails(insZone: number, style: TravelStyle, days: number): InsuranceDetails {
-  const tierIndex = style === 'budget' ? 0 : style === 'comfort' ? 2 : 1;
+function getAvgInsuranceRate(insZone: 1 | 2 | 3): number {
   const zoneIndex = insZone - 1;
+  const rates = Object.values(INSURANCE_RATES).map(ins => ins.rates[zoneIndex]);
+  return rates.reduce((s, r) => s + r, 0) / rates.length;
+}
 
-  const insurerRates = Object.values(INSURANCE_RATES).map(ins => ({
-    name: ins.name,
-    rate: ins.rates[zoneIndex][tierIndex],
-  }));
-
-  insurerRates.sort((a, b) => a.rate - b.rate);
-  const cheapest = insurerRates[0];
-  const expensive = insurerRates[insurerRates.length - 1];
-  const avgRate = insurerRates.reduce((s, r) => s + r.rate, 0) / insurerRates.length;
-
+function buildBreakdown(
+  transportPP: number,
+  accommodationPPPerNight: number,
+  avgInsRate: number,
+  days: number,
+  travelers: number,
+): TransportBreakdown {
+  const accommodationPP = accommodationPPPerNight * days;
+  const insurancePP = avgInsRate * days;
+  const totalPP = transportPP + accommodationPP + insurancePP;
   return {
-    cheapestName: cheapest.name,
-    cheapestTotal: Math.round(cheapest.rate * days * EUR_TO_RSD),
-    expensiveName: expensive.name,
-    expensiveTotal: Math.round(expensive.rate * days * EUR_TO_RSD),
-    averageTotal: Math.round(avgRate * days * EUR_TO_RSD),
+    transportPP: Math.round(transportPP * 100) / 100,
+    accommodationPP: Math.round(accommodationPP * 100) / 100,
+    insurancePP: Math.round(insurancePP * 100) / 100,
+    totalPP: Math.round(totalPP * 100) / 100,
+    totalGroup: Math.round(totalPP * travelers * 100) / 100,
   };
 }
 
@@ -68,63 +71,67 @@ export function calculateCosts(
   destination: Destination,
   days: number,
   travelers: number,
-  style: TravelStyle
-): CostBreakdown {
-  const costs = destination.costs;
-  const rooms = Math.ceil(travelers / 2);
-  const nights = days - 1;
+  _tier: InsuranceTier,
+  flightType: 'budget' | 'avg' = 'budget',
+): CalcResult {
+  const avgRate = getAvgInsuranceRate(destination.insZone);
+  const accomMid = destination.accommodationMid;
 
-  const flights = costs.flight[style] * travelers;
-  const accommodation = costs.accommodation[style] * nights * rooms;
-  const food = costs.food[style] * days * travelers;
-  const transport = costs.transport[style] * days;
-  const sim = costs.isEU ? 0 : costs.sim;
+  // Plane breakdowns for both flight types
+  const planeBudget = buildBreakdown(destination.flightBudget, accomMid, avgRate, days, travelers);
+  const planeAvg = buildBreakdown(destination.flightAvg, accomMid, avgRate, days, travelers);
+  const plane = flightType === 'budget' ? planeBudget : planeAvg;
 
-  const insuranceDetails = getInsuranceDetails(costs.insZone, style, days);
-  const insurance = insuranceDetails.averageTotal;
+  // Car breakdown
+  let car: TransportBreakdown | null = null;
+  if (destination.carTotal !== null) {
+    const carPP = destination.carTotal / travelers;
+    car = buildBreakdown(carPP, accomMid, avgRate, days, travelers);
+  }
 
-  const total = flights + accommodation + food + transport + sim;
+  // Savings comparison (plane budget vs car)
+  let savingsPP: number | null = null;
+  let cheaperOption: 'plane' | 'car' | null = null;
+  if (car) {
+    const diff = Math.abs(plane.totalPP - car.totalPP);
+    savingsPP = Math.round(diff * 100) / 100;
+    cheaperOption = plane.totalPP <= car.totalPP ? 'plane' : 'car';
+  }
+
+  // Insurer table
+  const zoneIndex = destination.insZone - 1;
+  const insurerTable: InsurerRow[] = Object.values(INSURANCE_RATES)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(ins => ({
+      name: ins.name,
+      dailyRate: ins.rates[zoneIndex],
+      total: Math.round(ins.rates[zoneIndex] * days * 100) / 100,
+    }));
+
+  // Accommodation tiers
+  const accommodationTiers: AccommodationTier[] = [
+    { tier: 'Budget', perNight: destination.accommodationBudget, total: Math.round(destination.accommodationBudget * days * 100) / 100 },
+    { tier: 'Mid-range', perNight: destination.accommodationMid, total: Math.round(destination.accommodationMid * days * 100) / 100 },
+    { tier: 'Luxury', perNight: destination.accommodationLuxury, total: Math.round(destination.accommodationLuxury * days * 100) / 100 },
+  ];
 
   return {
-    flights,
-    accommodation,
-    food,
-    transport,
-    sim,
-    insurance,
-    insuranceDetails,
-    total,
+    plane,
+    planeBudget,
+    planeAvg,
+    car,
+    savingsPP,
+    cheaperOption,
+    insurerTable,
+    accommodationTiers,
+    avgInsuranceRate: avgRate,
   };
 }
 
-export function getCostItems(breakdown: CostBreakdown, isEU: boolean): CostItem[] {
-  const items: CostItem[] = [
-    { id: 'flights', icon: '✈️', label: 'Letovi', value: breakdown.flights, showInTotal: true },
-    { id: 'accommodation', icon: '🏠', label: 'Smeštaj', value: breakdown.accommodation, showInTotal: true },
-    { id: 'food', icon: '🍽️', label: 'Hrana', value: breakdown.food, showInTotal: true },
-    { id: 'transport', icon: '🚌', label: 'Prevoz', value: breakdown.transport, showInTotal: true },
-  ];
-
-  if (!isEU && breakdown.sim > 0) {
-    items.push({ id: 'sim', icon: '📱', label: 'SIM / Internet', value: breakdown.sim, showInTotal: true });
-  }
-
-  items.push({
-    id: 'insurance',
-    icon: '🏥',
-    label: 'Putno osiguranje',
-    value: breakdown.insurance,
-    isPerPerson: true,
-    showInTotal: false,
-    insuranceDetails: breakdown.insuranceDetails,
-  });
-
-  return items;
-}
-
 export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('sr-RS', {
+  return '€' + new Intl.NumberFormat('sr-RS', {
     style: 'decimal',
-    maximumFractionDigits: 0,
-  }).format(value) + ' din';
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(value);
 }
