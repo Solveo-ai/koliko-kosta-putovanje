@@ -1,114 +1,180 @@
 
 
-# Trip Cost Calculator for PolicyMarket - Implementation Plan
+# PolicyMarket Travel Cost Calculator — Major Refactor
 
 ## Overview
-A Serbian-language trip cost calculator ("Koliko Košta Putovanje") that estimates travel expenses for 6 popular destinations. The tool positions travel insurance as a natural, low-cost line item while providing genuine value to travelers planning their trips.
+
+Rebuild the calculator data layer and results display to match the PolicyMarket Travel Cost Intelligence Report 2026 specification. The core change: **Transport + Accommodation + Insurance = Total** (removing food, SIM, local transport). All prices switch from RSD to EUR. Transport mode is auto-determined (plane-only vs plane+car). Insurance shown neutrally with all 5 insurers alphabetically.
 
 ---
 
-## Pages to Build (7 Total)
+## What Changes
 
-### 1. Main Calculator Page (`/koliko-kosta-putovanje`)
-- Generic calculator with no destination pre-selected
-- Clean hero section with title "Koliko košta tvoje putovanje?"
-- Form with 4 inputs: Destination dropdown, Days slider (3-21), Travelers dropdown (1-6), Travel style radio buttons
+### 1. Data Model Overhaul (`src/data/destinations.ts`)
 
-### 2-7. Destination-Specific Pages
-Each destination page shares the same calculator component but with:
-- Destination pre-selected and results auto-displayed
-- Unique SEO meta tags for that destination
-- URLs: `/koliko-kosta-putovanje-u-grcku`, `/koliko-kosta-putovanje-u-tursku`, `/koliko-kosta-putovanje-u-egipat`, `/koliko-kosta-putovanje-u-spaniju`, `/koliko-kosta-putovanje-u-italiju`, `/koliko-kosta-putovanje-u-crnu-goru`
+**Remove:** `food`, `transport` (local), `sim`, `isEU`, `insurance` (flat), `comparisonUrl` fields, `TravelStyle` type (replaced by `InsuranceTier`).
+
+**New data structure per destination:**
+- `flightBudget` / `flightAvg` (EUR per person, fixed round-trip)
+- `carTotal` (EUR per vehicle round-trip, or `null` if not drivable)
+- `carKm` / `carRoute` (info strings)
+- `accommodationBudget` / `accommodationMid` / `accommodationLuxury` (EUR per person per night)
+- `insZone` (1/2/3)
+- Destination groups for dropdown: Mediterranean & Beach, European City Breaks, Long-Haul & Emerging
+
+**New type:** `InsuranceTier = 'budget' | 'standard' | 'premium'` replacing `TravelStyle`.
+
+**Travel styles array:** Updated to reflect insurance tiers (Budget ~15K EUR coverage, Standard ~30K EUR, Premium ~40-60K EUR).
+
+### 2. Calculation Logic Rewrite (`src/lib/calculateCosts.ts`)
+
+**New formula (per person):**
+```text
+TOTAL = Transport/pp + (Accommodation_mid/night × Days) + (Insurance_avg_rate × Days)
+```
+
+**Transport:**
+- Plane: `flight_price` (budget LCC or average, user sub-toggle)
+- Car: `car_total_RT / num_travellers`
+
+**Accommodation:** `mid_rate × days` (per person — data already assumes 2-per-room sharing). Remove the `Math.ceil(travelers/2)` room calculation since the report data is already per person.
+
+**Insurance:** Market average = mean of all 5 insurers for zone + tier. Uses the single-tier rates (not the 3x3 matrix currently stored — the user specified standard/mid-package rates only per zone).
+
+Insurance rates to use (EUR/person/day):
+| Insurer | Balkans | Europe | World |
+|---------|---------|--------|-------|
+| Generali | 1.40 | 2.00 | 4.00 |
+| Grawe | 0.85 | 1.20 | 2.50 |
+| Sava | 1.00 | 1.50 | 2.90 |
+| Uniqa | 1.30 | 1.90 | 3.80 |
+| Wiener | 1.10 | 1.60 | 3.20 |
+
+**Currency:** All calculations in EUR. `formatCurrency` outputs `€XX.XX` instead of RSD.
+
+### 3. Form Changes (`src/components/calculator/TripCalculatorForm.tsx`)
+
+- **Destination dropdown:** Group destinations into 3 categories (Mediterranean, City Breaks, Long-Haul)
+- **Days slider:** Range 1-21 (currently 3-21)
+- **Travelers selector:** Range 1-10 (currently 1-6)
+- **Insurance Tier selector:** Replace "Stil putovanja" radio group with 3-button toggle: Budget / Standard / Premium (default: Standard). Update descriptions to reflect coverage levels
+- **Remove:** No transport mode selector needed
+
+### 4. Results Display Overhaul (`src/components/calculator/CostResults.tsx` + `TripCalculator.tsx`)
+
+**Auto transport detection:**
+- If destination has `carTotal !== null`: Show 2 side-by-side cards (Plane vs Car)
+- If `carTotal === null`: Show single Plane card + message "Ova destinacija je najisplativija avionom iz Beograda."
+
+**Each transport card shows:**
+- Transport cost per person
+- Accommodation cost (mid-range x days)
+- Insurance cost (market avg x days)
+- **Total per person** (prominent)
+- **Total for group** (if travelers > 1)
+
+**Plane card:** Sub-toggle for Budget LCC / Average fare (default: Budget LCC)
+
+**Car card:** Info line showing distance, route, cost split
+
+**Savings badge:** The cheaper option gets a green badge: "Usteda €XX/os u odnosu na [other]"
+
+**Below cards (shared sections):**
+1. **Insurance comparison table** — all 5 insurers alphabetically, showing daily rate + total for trip duration. NO badges, NO "cheapest"/"recommended" labels.
+2. **Accommodation tier breakdown** — Budget / Mid-range / Luxury with per-night and total costs.
+
+### 5. Footer Update (`src/components/layout/Footer.tsx`)
+
+Add data sources line:
+> "Travel Cost + Insurance Intelligence -- February 2026 -- Grawe -- Wiener -- Sava -- Generali -- Uniqa -- Google Flights -- BudgetYourTrip -- Tolls.eu"
+
+### 6. Remove Food References
+
+- Remove `food` from `CostBreakdown`, `CostItem`, `DestinationCosts`
+- Remove `sim` cost item
+- Remove `transport` (local transport) cost item
+- Remove all food-related lines from `getCostItems`
 
 ---
 
-## Calculator Features
+## Files Modified
 
-### Input Form
-- **Destinacija (Destination)**: Dropdown with 6 options - Grčka, Turska, Egipat, Španija, Italija, Crna Gora
-- **Broj dana (Days)**: Smooth slider from 3-21 days with step of 1, default 7
-- **Putnika (Travelers)**: Dropdown 1-6 people, default 2
-- **Stil putovanja (Travel style)**: Radio buttons - Budget, Mid-range, Komfor, default Mid-range
-- **Izračunaj button**: Green primary CTA button
-
-### Results Display with Animation
-When user clicks "Izračunaj", costs appear one-by-one with a running total:
-1. ✈ Letovi (Flights) - appears first
-2. 🏠 Smeštaj (Accommodation) - appears second
-3. 🍽 Hrana (Food) - appears third
-4. 🚌 Prevoz (Local transport) - appears fourth
-5. 📱 SIM / Internet - appears fifth (hidden if 0 for EU countries)
-6. 🏥 Putno osiguranje (Insurance) - appears last, shown as "od X din/osoba"
-
-The total animates up as each category appears, completing in 3-4 seconds.
-
-### Miško Quote Boxes
-Two styled callout cards featuring the uploaded Miško avatar:
-1. **Cost context quote**: "Osiguranje je manje od 1% ukupnog troška — a pokriva medicinske račune do €30,000."
-2. **Destination-specific tip**: Unique message per destination (e.g., for Greece: "U Grčkoj, poseta lekaru bez osiguranja košta €80-300. Sa osiguranjem: 0 din.")
-
-### Call-to-Action
-- Primary CTA: "Uporedi putno osiguranje za [Destination] →" linking to PolicyMarket comparison page
-- Email capture: Simple form with "📧 Pošalji sebi detaljan plan" - collects email + destination (UI only, no backend integration)
+| File | Change |
+|------|--------|
+| `src/data/destinations.ts` | Complete data model rewrite — new interface, new destination data with EUR prices, grouped destinations, insurance tier type |
+| `src/lib/calculateCosts.ts` | New calculation logic (transport + accom + insurance), EUR formatting, plane vs car breakdown, insurance comparison table data |
+| `src/components/calculator/TripCalculatorForm.tsx` | Grouped dropdown, 1-10 travelers, 1-21 days, insurance tier toggle replacing travel style |
+| `src/components/calculator/CostResults.tsx` | Side-by-side plane/car cards, flight type sub-toggle, savings badge, insurance table, accommodation breakdown |
+| `src/components/calculator/TripCalculator.tsx` | Wire up new state (insurance tier, flight type), pass car/plane breakdowns, remove food/sim references |
+| `src/components/layout/Footer.tsx` | Add data sources attribution line |
 
 ---
 
-## Calculation Logic (No Backend Required)
-All calculations run client-side using a JSON data file:
-- Flights: cost per person × travelers (flat, doesn't scale with duration)
-- Accommodation: cost per night × (days-1) × rooms (rooms = ceiling of travelers/2)
-- Food: cost per day × days × travelers
-- Local transport: cost per day × days (shared, not multiplied by travelers)
-- SIM/Data: flat rate per trip
-- Insurance: Display only ("od X din/osoba"), not included in total
+## Technical Details
 
-Each cost shows the midpoint of the range with "~" prefix (e.g., "~40,000 din").
+### New Destination Interface
 
----
+```typescript
+export type InsuranceTier = 'budget' | 'standard' | 'premium';
 
-## Visual Design (Matching PolicyMarket Reference)
-- **Color palette**: Dark navy backgrounds, white text, green accent color for CTAs
-- **Typography**: Clean, modern sans-serif matching PolicyMarket's site
-- **Cards**: Light background callout boxes for Miško quotes
-- **Buttons**: Green "Uporedi" style for primary actions
-- **Icons**: Emoji icons for each cost category (✈, 🏠, 🍽, 🚌, 📱, 🏥)
-- **Avatar**: Miško (the schnauzer in business attire) at ~48-64px desktop, ~40px mobile
-- **Footer**: Dark footer matching PolicyMarket's style with contact info
+export interface Destination {
+  id: DestinationId;
+  name: string;
+  subtitle: string;        // e.g. "Halkidiki · Thassos · Corfu"
+  group: string;           // "Mediterranean & Beach" | "European City Breaks" | "Long-Haul & Emerging"
+  flightBudget: number;    // EUR per person, budget LCC
+  flightAvg: number;       // EUR per person, mid-season average
+  carTotal: number | null; // EUR round-trip total, null if not drivable
+  carKm: string | null;    // e.g. "~820 km"
+  carRoute: string | null; // e.g. "via N. Macedonia (Evzoni)"
+  accommodationBudget: number; // EUR per person per night
+  accommodationMid: number;
+  accommodationLuxury: number;
+  insZone: 1 | 2 | 3;
+  miskoTip: string;
+}
+```
 
----
+### Insurance Data (single standard rate per zone, alphabetical)
 
-## Mobile & Desktop Experience
-- Fully responsive design with equal priority for mobile and desktop
-- Mobile: Single-column layout, touch-friendly slider and radio buttons, large tap targets
-- Desktop: Wider layout without feeling sparse
-- Standard 768px breakpoint
-- Respects `prefers-reduced-motion` for the animation
+```typescript
+const INSURANCE_RATES = {
+  generali: { name: 'Generali', rates: [1.40, 2.00, 4.00] },
+  grawe:    { name: 'Grawe',    rates: [0.85, 1.20, 2.50] },
+  sava:     { name: 'Sava',     rates: [1.00, 1.50, 2.90] },
+  uniqa:    { name: 'Uniqa',    rates: [1.30, 1.90, 3.80] },
+  wiener:   { name: 'Wiener',   rates: [1.10, 1.60, 3.20] },
+};
+```
 
----
+### Calculation Output
 
-## SEO Implementation
-Each page includes:
-- Unique `<title>` and `<meta description>` in Serbian
-- Proper heading hierarchy
-- Destination-specific canonical URLs
-- UTM parameters on all outbound links to PolicyMarket comparison pages
+```typescript
+export interface TransportBreakdown {
+  transportPP: number;
+  accommodationPP: number;
+  insurancePP: number;
+  totalPP: number;
+  totalGroup: number;
+}
 
----
+export interface CalcResult {
+  plane: TransportBreakdown;
+  car: TransportBreakdown | null;
+  savingsPP: number | null;       // abs difference if both exist
+  cheaperOption: 'plane' | 'car' | null;
+  insurerTable: { name: string; dailyRate: number; total: number }[];
+  accommodationTiers: { tier: string; perNight: number; total: number }[];
+}
+```
 
-## What's Included in This Build
-✅ All 7 pages with routing
-✅ Full calculator with all 6 destinations
-✅ Animated results reveal with running total
-✅ Miško avatar integration
-✅ Simple email capture form UI (no backend/MailerLite)
-✅ Responsive design matching PolicyMarket's style
-✅ SEO meta tags for all pages
-✅ Cost data in maintainable JSON format
+## What Does NOT Change
 
-## What's NOT Included (Per PRD Scope)
-❌ MailerLite/email integration backend
-❌ GA4 custom event tracking
-❌ FAQ schema markup
-❌ User accounts or saved trips
-❌ Real-time price APIs
+- Page routing (`/` route)
+- Header component and logo
+- Misko quote component structure
+- Email capture component
+- Color scheme, fonts, overall layout aesthetic
+- CTA button to PolicyMarket comparison
+- Serbian language throughout
 
