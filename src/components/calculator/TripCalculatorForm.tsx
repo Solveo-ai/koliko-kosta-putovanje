@@ -67,7 +67,7 @@ export function TripCalculatorForm({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Label className="text-sm font-medium text-foreground">Broj dana</Label>
-          <span className="text-lg font-bold text-primary">{days}</span>
+          <span className="text-lg font-bold text-primary">{days} {days === 1 ? 'dan' : 'dana'}</span>
         </div>
         <Slider
           value={[days]}
@@ -110,12 +110,16 @@ export function TripCalculatorForm({
           type="single"
           value={accomLevel}
           onValueChange={(v) => { if (v) onAccomLevelChange(v as AccommodationLevel); }}
-          className="w-full"
+          className="w-full gap-2"
         >
           {accommodationLevels.map((t) => (
-            <ToggleGroupItem key={t.id} value={t.id} className="flex-1 flex-col gap-0.5 py-3">
-              <span className="text-sm font-medium">{t.label}</span>
-              <span className="text-[10px] text-muted-foreground">{t.description}</span>
+            <ToggleGroupItem
+              key={t.id}
+              value={t.id}
+              className="flex-1 flex-col gap-1 rounded-xl border border-border bg-card py-4 px-3 shadow-sm transition-all data-[state=on]:border-primary data-[state=on]:bg-secondary data-[state=on]:shadow-md"
+            >
+              <span className="text-sm font-semibold">{t.label}</span>
+              <span className="text-[11px] text-muted-foreground">{t.description}</span>
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
