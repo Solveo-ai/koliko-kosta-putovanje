@@ -379,17 +379,17 @@ export interface AccommodationLevelInfo {
 export const accommodationLevels: AccommodationLevelInfo[] = [
   {
     id: 'budget',
-    label: 'Budget',
-    description: 'Hostel · 1★-2★',
+    label: 'Budžet',
+    description: 'Hostel · 1★–2★',
   },
   {
     id: 'mid',
-    label: 'Mid-range',
+    label: 'Srednji nivo',
     description: '3★ hotel',
   },
   {
     id: 'luxury',
-    label: 'Luxury',
-    description: '4★-5★ hotel',
+    label: 'Luksuz',
+    description: '4★–5★ hotel',
   },
 ];

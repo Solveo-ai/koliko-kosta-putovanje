@@ -116,10 +116,10 @@ export function TripCalculatorForm({
             <ToggleGroupItem
               key={t.id}
               value={t.id}
-              className="flex-1 flex-col gap-1 rounded-xl border border-border bg-card py-4 px-3 shadow-sm transition-all data-[state=on]:border-primary data-[state=on]:bg-secondary data-[state=on]:shadow-md"
+              className="flex-1 flex-col gap-1.5 rounded-xl border border-border bg-card py-5 px-4 shadow-sm transition-all data-[state=on]:border-primary data-[state=on]:bg-secondary data-[state=on]:shadow-md"
             >
               <span className="text-sm font-semibold">{t.label}</span>
-              <span className="text-[11px] text-muted-foreground">{t.description}</span>
+              <span className="text-[11px] leading-tight text-muted-foreground">{t.description}</span>
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
