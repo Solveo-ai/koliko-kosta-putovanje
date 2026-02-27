@@ -93,7 +93,7 @@ export function TripCalculator() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Uporedi putno osiguranje za {selectedDestination.name} →
+                  Pogledaj cene osiguranja za tvoju destinaciju →
                 </a>
               </Button>
 
