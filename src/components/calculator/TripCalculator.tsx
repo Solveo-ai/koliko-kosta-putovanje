@@ -60,20 +60,14 @@ export function TripCalculator() {
       {/* Results */}
       {showResults && results && selectedDestination && (
         <>
-          <Card className="border-border bg-card shadow-sm">
-            <CardContent className="p-6">
-              <h3 className="mb-4 text-lg font-semibold text-foreground">
-                Procena troškova za {selectedDestination.name}
-              </h3>
-              <CostResults
-                result={results}
-                destination={selectedDestination}
-                travelers={travelers}
-                flightType={flightType}
-                onFlightTypeChange={setFlightType}
-              />
-            </CardContent>
-          </Card>
+          <CostResults
+            result={results}
+            destination={selectedDestination}
+            days={days}
+            travelers={travelers}
+            flightType={flightType}
+            onFlightTypeChange={setFlightType}
+          />
 
           {/* Miško Quotes */}
           <div className="space-y-4">
