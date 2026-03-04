@@ -110,16 +110,16 @@ export function TripCalculatorForm({
           type="single"
           value={accomLevel}
           onValueChange={(v) => { if (v) onAccomLevelChange(v as AccommodationLevel); }}
-          className="w-full gap-2"
+          className="w-full gap-1.5 sm:gap-2"
         >
           {accommodationLevels.map((t) => (
             <ToggleGroupItem
               key={t.id}
               value={t.id}
-              className="flex-1 flex-col gap-1.5 rounded-xl border border-border bg-card py-5 px-4 shadow-sm transition-all data-[state=on]:border-primary data-[state=on]:bg-secondary data-[state=on]:shadow-md"
+              className="flex-1 flex-col gap-0.5 sm:gap-1.5 rounded-xl border border-border bg-card py-3 px-2 sm:py-5 sm:px-4 shadow-sm transition-all data-[state=on]:border-primary data-[state=on]:bg-secondary data-[state=on]:shadow-md min-w-0"
             >
-              <span className="text-sm font-semibold">{t.label}</span>
-              <span className="text-[11px] leading-tight text-muted-foreground">{t.description}</span>
+              <span className="text-xs sm:text-sm font-semibold truncate w-full text-center">{t.label}</span>
+              <span className="text-[10px] sm:text-[11px] leading-tight text-muted-foreground text-center w-full">{t.description}</span>
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
