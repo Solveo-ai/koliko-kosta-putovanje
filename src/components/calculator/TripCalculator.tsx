@@ -69,6 +69,21 @@ export function TripCalculator() {
             onFlightTypeChange={setFlightType}
           />
 
+          {/* CTA Button */}
+          <Button
+            asChild
+            size="lg"
+            className="w-full text-base font-semibold"
+          >
+            <a
+              href={comparisonUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Uporedi polise osiguranja →
+            </a>
+          </Button>
+
           {/* Miško Quotes */}
           <div className="space-y-4">
             <MiskoQuote
@@ -80,26 +95,10 @@ export function TripCalculator() {
             />
           </div>
 
-          {/* CTA Section */}
-          <Card className="border-primary/30 bg-card shadow-sm">
-            <CardContent className="space-y-6 p-6">
-              <Button
-                asChild
-                size="lg"
-                className="w-full text-base font-semibold"
-              >
-                <a
-                  href={comparisonUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Pogledaj cene osiguranja za tvoju destinaciju →
-                </a>
-              </Button>
-
-              <div className="border-t border-border pt-6">
-                <EmailCapture destination={selectedDestination.name} />
-              </div>
+          {/* Email Capture */}
+          <Card className="border-border bg-card shadow-sm">
+            <CardContent className="p-6">
+              <EmailCapture destination={selectedDestination.name} />
             </CardContent>
           </Card>
         </>
