@@ -100,7 +100,21 @@ Deno.serve(async (req) => {
     }
 
     console.log('Contact added successfully');
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({
+      success: true,
+      receivedPayload: {
+        email,
+        destinationName,
+        days,
+        travelers,
+        flightType,
+        cheaperOption,
+        savingsPP,
+        planeBudget,
+        planeAvg,
+        car,
+      },
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (err) {
