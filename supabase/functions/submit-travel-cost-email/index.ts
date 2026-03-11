@@ -18,7 +18,31 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email } = await req.json();
+    const {
+      email,
+      destinationName,
+      days,
+      travelers,
+      flightType,
+      cheaperOption,
+      savingsPP,
+      planeBudget,
+      planeAvg,
+      car,
+    } = await req.json();
+
+    console.log('Received calculator payload:', {
+      email,
+      destinationName,
+      days,
+      travelers,
+      flightType,
+      cheaperOption,
+      savingsPP,
+      planeBudget,
+      planeAvg,
+      car,
+    });
 
     if (!email || typeof email !== 'string' || !EMAIL_REGEX.test(email.trim())) {
       return new Response(JSON.stringify({ error: 'Invalid email address' }), {
