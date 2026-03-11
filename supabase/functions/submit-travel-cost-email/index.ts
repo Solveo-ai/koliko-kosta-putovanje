@@ -5,6 +5,58 @@ const corsHeaders = {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function fmt(value: number): string {
+  return '€' + new Intl.NumberFormat('sr-RS', {
+    style: 'decimal',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+interface Breakdown {
+  transportPP: number;
+  accommodationPP: number;
+  insurancePP: number;
+  totalPP: number;
+  totalGroup: number;
+}
+
+function buildPlaneSection(data: Breakdown, flightType: 'budget' | 'avg'): string {
+  const subtitle = flightType === 'budget' ? '(Budget let)' : '(Prosečna cena leta)';
+  return [
+    'Avionom',
+    subtitle,
+    `- Let: ${fmt(data.transportPP)}`,
+    `- Smeštaj: ${fmt(data.accommodationPP)}`,
+    `- Putno osiguranje: ${fmt(data.insurancePP)}`,
+    `- Ukupno po osobi: ${fmt(data.totalPP)}`,
+    `- Ukupno za grupu: ${fmt(data.totalGroup)}`,
+  ].join('\n');
+}
+
+function buildCarSection(data: Breakdown | null): string {
+  if (!data) return '';
+  return [
+    'Automobilom',
+    '',
+    `- Gorivo + putarina: ${fmt(data.transportPP)}`,
+    `- Smeštaj: ${fmt(data.accommodationPP)}`,
+    `- Putno osiguranje: ${fmt(data.insurancePP)}`,
+    `- Ukupno po osobi: ${fmt(data.totalPP)}`,
+    `- Ukupno za grupu: ${fmt(data.totalGroup)}`,
+  ].join('\n');
+}
+
+function buildSavingsText(cheaperOption: string | null, savingsPP: number | null): string {
+  if (!cheaperOption) return '';
+  const label = cheaperOption === 'plane' ? 'avion' : 'automobil';
+  let text = `Najpovoljnija opcija za ovo putovanje je: ${label}.`;
+  if (savingsPP != null && savingsPP > 0) {
+    text += ` Ušteda po osobi: ${fmt(savingsPP)}.`;
+  }
+  return text;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -32,16 +84,8 @@ Deno.serve(async (req) => {
     } = await req.json();
 
     console.log('Received calculator payload:', {
-      email,
-      destinationName,
-      days,
-      travelers,
-      flightType,
-      cheaperOption,
-      savingsPP,
-      planeBudget,
-      planeAvg,
-      car,
+      email, destinationName, days, travelers, flightType,
+      cheaperOption, savingsPP, planeBudget, planeAvg, car,
     });
 
     if (!email || typeof email !== 'string' || !EMAIL_REGEX.test(email.trim())) {
@@ -65,6 +109,7 @@ Deno.serve(async (req) => {
     const listId = parseInt(brevoListId, 10);
     const trimmedEmail = email.trim().toLowerCase();
 
+    // ── 1. Add / update contact in list ──
     console.log(`Adding contact ${trimmedEmail} to Brevo list ${listId}`);
 
     const brevoRes = await fetch('https://api.brevo.com/v3/contacts', {
@@ -83,50 +128,70 @@ Deno.serve(async (req) => {
 
     if (!brevoRes.ok) {
       const errBody = await brevoRes.text();
-      console.error(`Brevo API error (${brevoRes.status}): ${errBody}`);
+      console.error(`Brevo contact API error (${brevoRes.status}): ${errBody}`);
 
-      // Contact already exists is not a real error
-      if (brevoRes.status === 400 && errBody.includes('Contact already exist')) {
-        console.log('Contact already exists, treating as success');
-        return new Response(JSON.stringify({
-          success: true,
-          receivedPayload: {
-            email,
-            destinationName,
-            days,
-            travelers,
-            flightType,
-            cheaperOption,
-            savingsPP,
-            planeBudget,
-            planeAvg,
-            car,
-          },
-        }), {
+      if (!(brevoRes.status === 400 && errBody.includes('Contact already exist'))) {
+        return new Response(JSON.stringify({ error: 'Failed to add contact' }), {
+          status: 502,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
+      console.log('Contact already exists, continuing to send email');
+    } else {
+      console.log('Contact added successfully');
+    }
 
-      return new Response(JSON.stringify({ error: 'Failed to add contact' }), {
+    // ── 2. Send transactional email ──
+    const selectedPlane: Breakdown = flightType === 'budget' ? planeBudget : planeAvg;
+    const planeSection = buildPlaneSection(selectedPlane, flightType);
+    const carSection = buildCarSection(car);
+    const savingsText = buildSavingsText(cheaperOption, savingsPP);
+    const comparisonUrl = `https://app-stg.policymarket.shop/sr-RS?utm_source=calculator&utm_medium=trip-cost&utm_campaign=${encodeURIComponent(destinationName)}`;
+
+    const emailPayload = {
+      sender: { name: 'PolicyMarket', email: 'info@policymarket.co' },
+      to: [{ email: trimmedEmail }],
+      templateId: 1,
+      params: {
+        destinationName,
+        days,
+        travelers,
+        planeSection,
+        carSection,
+        savingsText,
+        comparisonUrl,
+      },
+    };
+
+    console.log('Sending transactional email with params:', emailPayload.params);
+
+    const emailRes = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'content-type': 'application/json',
+        'api-key': brevoApiKey,
+      },
+      body: JSON.stringify(emailPayload),
+    });
+
+    if (!emailRes.ok) {
+      const emailErr = await emailRes.text();
+      console.error(`Brevo transactional email error (${emailRes.status}): ${emailErr}`);
+      return new Response(JSON.stringify({ error: 'Failed to send email' }), {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log('Contact added successfully');
+    const emailResult = await emailRes.json();
+    console.log('Transactional email sent successfully:', emailResult);
+
     return new Response(JSON.stringify({
       success: true,
       receivedPayload: {
-        email,
-        destinationName,
-        days,
-        travelers,
-        flightType,
-        cheaperOption,
-        savingsPP,
-        planeBudget,
-        planeAvg,
-        car,
+        email, destinationName, days, travelers, flightType,
+        cheaperOption, savingsPP, planeBudget, planeAvg, car,
       },
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
