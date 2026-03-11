@@ -1,1 +1,4 @@
 project_id = "nnfivknwhiryvmiudvur"
+
+[functions.submit-travel-cost-email]
+verify_jwt = false
