@@ -98,7 +98,17 @@ export function TripCalculator() {
           {/* Email Capture */}
           <Card className="border-border bg-card shadow-sm">
             <CardContent className="p-6">
-              <EmailCapture destination={selectedDestination.name} />
+              <EmailCapture
+                destinationName={selectedDestination.name}
+                days={days}
+                travelers={travelers}
+                flightType={flightType}
+                cheaperOption={results.cheaperOption}
+                savingsPP={results.savingsPP}
+                planeBudget={results.planeBudget}
+                planeAvg={results.planeAvg}
+                car={results.car}
+              />
             </CardContent>
           </Card>
         </>
