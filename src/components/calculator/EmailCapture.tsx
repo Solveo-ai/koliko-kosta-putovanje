@@ -2,12 +2,21 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import type { TransportBreakdown } from '@/lib/calculateCosts';
 
 interface EmailCaptureProps {
-  destination: string;
+  destinationName: string;
+  days: number;
+  travelers: number;
+  flightType: 'budget' | 'avg';
+  cheaperOption: 'plane' | 'car' | null;
+  savingsPP: number | null;
+  planeBudget: TransportBreakdown;
+  planeAvg: TransportBreakdown;
+  car: TransportBreakdown | null;
 }
 
-export function EmailCapture({ destination }: EmailCaptureProps) {
+export function EmailCapture({ destinationName }: EmailCaptureProps) {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -33,7 +42,7 @@ export function EmailCapture({ destination }: EmailCaptureProps) {
       }
 
       toast.success('Plan poslat na tvoj email!', {
-        description: `Poslali smo detaljan plan za ${destination} na ${email}`,
+        description: `Poslali smo detaljan plan za ${destinationName} na ${email}`,
       });
       setEmail('');
     } catch (err: any) {
