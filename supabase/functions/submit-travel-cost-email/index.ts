@@ -18,7 +18,31 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { email } = await req.json();
+    const {
+      email,
+      destinationName,
+      days,
+      travelers,
+      flightType,
+      cheaperOption,
+      savingsPP,
+      planeBudget,
+      planeAvg,
+      car,
+    } = await req.json();
+
+    console.log('Received calculator payload:', {
+      email,
+      destinationName,
+      days,
+      travelers,
+      flightType,
+      cheaperOption,
+      savingsPP,
+      planeBudget,
+      planeAvg,
+      car,
+    });
 
     if (!email || typeof email !== 'string' || !EMAIL_REGEX.test(email.trim())) {
       return new Response(JSON.stringify({ error: 'Invalid email address' }), {
@@ -64,7 +88,21 @@ Deno.serve(async (req) => {
       // Contact already exists is not a real error
       if (brevoRes.status === 400 && errBody.includes('Contact already exist')) {
         console.log('Contact already exists, treating as success');
-        return new Response(JSON.stringify({ success: true }), {
+        return new Response(JSON.stringify({
+          success: true,
+          receivedPayload: {
+            email,
+            destinationName,
+            days,
+            travelers,
+            flightType,
+            cheaperOption,
+            savingsPP,
+            planeBudget,
+            planeAvg,
+            car,
+          },
+        }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
@@ -76,7 +114,21 @@ Deno.serve(async (req) => {
     }
 
     console.log('Contact added successfully');
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({
+      success: true,
+      receivedPayload: {
+        email,
+        destinationName,
+        days,
+        travelers,
+        flightType,
+        cheaperOption,
+        savingsPP,
+        planeBudget,
+        planeAvg,
+        car,
+      },
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (err) {
