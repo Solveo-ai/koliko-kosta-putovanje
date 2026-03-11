@@ -88,7 +88,21 @@ Deno.serve(async (req) => {
       // Contact already exists is not a real error
       if (brevoRes.status === 400 && errBody.includes('Contact already exist')) {
         console.log('Contact already exists, treating as success');
-        return new Response(JSON.stringify({ success: true }), {
+        return new Response(JSON.stringify({
+          success: true,
+          receivedPayload: {
+            email,
+            destinationName,
+            days,
+            travelers,
+            flightType,
+            cheaperOption,
+            savingsPP,
+            planeBudget,
+            planeAvg,
+            car,
+          },
+        }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
