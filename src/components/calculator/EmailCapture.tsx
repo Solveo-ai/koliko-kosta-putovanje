@@ -2,7 +2,14 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import type { TransportBreakdown } from '@/lib/calculateCosts';
+
+interface TransportBreakdown {
+  transportPP: number;
+  accommodationPP: number;
+  insurancePP: number;
+  totalPP: number;
+  totalGroup: number;
+}
 
 interface EmailCaptureProps {
   destinationName: string;
@@ -16,7 +23,17 @@ interface EmailCaptureProps {
   car: TransportBreakdown | null;
 }
 
-export function EmailCapture({ destinationName }: EmailCaptureProps) {
+export function EmailCapture({
+  destinationName,
+  days,
+  travelers,
+  flightType,
+  cheaperOption,
+  savingsPP,
+  planeBudget,
+  planeAvg,
+  car,
+}: EmailCaptureProps) {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
