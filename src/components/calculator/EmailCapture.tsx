@@ -12,6 +12,7 @@ interface TransportBreakdown {
 }
 
 interface EmailCaptureProps {
+  destinationId: string;
   destinationName: string;
   days: number;
   travelers: number;
@@ -24,6 +25,7 @@ interface EmailCaptureProps {
 }
 
 export function EmailCapture({
+  destinationId,
   destinationName,
   days,
   travelers,
@@ -51,6 +53,7 @@ export function EmailCapture({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email,
+            destinationId,
             destinationName,
             days,
             travelers,
