@@ -72,6 +72,7 @@ Deno.serve(async (req) => {
   try {
     const {
       email,
+      destinationId,
       destinationName,
       days,
       travelers,
