@@ -177,7 +177,7 @@ Deno.serve(async (req) => {
 
     const savingsPPFormatted = savingsPP != null && savingsPP > 0 ? fmt(savingsPP) : "";
 
-    const comparisonUrl = `https://policymarket.shop/sr-RS?utm_source=calculator&utm_medium=trip-cost&utm_campaign=${destinationId}`;
+    const comparisonUrl = `https://policymarket.shop/${destinationId}`;
 
     const emailPayload = {
       sender: { name: "PolicyMarket", email: "info@policymarket.co" },
