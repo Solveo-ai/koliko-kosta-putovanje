@@ -144,25 +144,60 @@ Deno.serve(async (req) => {
 
     // ── 2. Send transactional email ──
     const selectedPlane: Breakdown = flightType === 'budget' ? planeBudget : planeAvg;
-    const planeSection = buildPlaneSection(selectedPlane, flightType);
-    const carSection = buildCarSection(car);
-    const savingsText = buildSavingsText(cheaperOption, savingsPP);
-    const comparisonUrl = `https://app.policymarket.shop/sr-RS?utm_source=calculator&utm_medium=trip-cost&utm_campaign=${destinationId}`;
 
-    const emailPayload = {
-      sender: { name: 'PolicyMarket', email: 'info@policymarket.co' },
-      to: [{ email: trimmedEmail }],
-      templateId: 1,
-      params: {
-        destinationName,
-        days,
-        travelers,
-        planeSection,
-        carSection,
-        savingsText,
-        comparisonUrl,
-      },
-    };
+const planeTitle = 'Avionom';
+const planeSubtitle = flightType === 'budget' ? 'Jeftiniji letovi (LCC)' : 'Prosečni letovi';
+const planeTransport = fmt(selectedPlane.transportPP);
+const planeAccommodation = fmt(selectedPlane.accommodationPP);
+const planeInsurance = fmt(selectedPlane.insurancePP);
+const planeTotalPP = fmt(selectedPlane.totalPP);
+const planeTotalGroup = fmt(selectedPlane.totalGroup);
+
+const carTitle = 'Automobilom';
+const carSubtitle = '';
+const carTransport = car ? fmt(car.transportPP) : '';
+const carAccommodation = car ? fmt(car.accommodationPP) : '';
+const carInsurance = car ? fmt(car.insurancePP) : '';
+const carTotalPP = car ? fmt(car.totalPP) : '';
+const carTotalGroup = car ? fmt(car.totalGroup) : '';
+
+const cheaperOptionLabel =
+  cheaperOption === 'plane' ? 'Avion' :
+  cheaperOption === 'car' ? 'Automobil' :
+  '';
+
+const savingsPPFormatted =
+  savingsPP != null && savingsPP > 0 ? fmt(savingsPP) : '';
+
+const comparisonUrl = `https://app.policymarket.shop/sr-RS?utm_source=calculator&utm_medium=trip-cost&utm_campaign=${destinationId}`;
+
+const emailPayload = {
+  sender: { name: 'PolicyMarket', email: 'info@policymarket.co' },
+  to: [{ email: trimmedEmail }],
+  templateId: 1,
+  params: {
+    destinationName,
+    days,
+    travelers,
+    planeTitle,
+    planeSubtitle,
+    planeTransport,
+    planeAccommodation,
+    planeInsurance,
+    planeTotalPP,
+    planeTotalGroup,
+    carTitle,
+    carSubtitle,
+    carTransport,
+    carAccommodation,
+    carInsurance,
+    carTotalPP,
+    carTotalGroup,
+    cheaperOptionLabel,
+    savingsPPFormatted,
+    const comparisonUrl = `https://policymarket.shop/sr-RS?utm_source=calculator&utm_medium=trip-cost&utm_campaign=${destinationId}`;,
+  },
+};
 
     console.log('Sending transactional email with params:', emailPayload.params);
 
