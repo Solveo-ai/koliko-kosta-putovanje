@@ -25,6 +25,7 @@ interface EmailCaptureProps {
 }
 
 export function EmailCapture({
+  destinationId,
   destinationName,
   days,
   travelers,
