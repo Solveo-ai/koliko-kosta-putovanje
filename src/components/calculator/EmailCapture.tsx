@@ -12,6 +12,7 @@ interface TransportBreakdown {
 }
 
 interface EmailCaptureProps {
+  destinationId: string;
   destinationName: string;
   days: number;
   travelers: number;
