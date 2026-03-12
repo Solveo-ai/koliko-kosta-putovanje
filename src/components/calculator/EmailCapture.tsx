@@ -53,6 +53,7 @@ export function EmailCapture({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email,
+            destinationId,
             destinationName,
             days,
             travelers,

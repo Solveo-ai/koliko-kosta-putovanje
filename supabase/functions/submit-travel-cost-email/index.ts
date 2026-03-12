@@ -147,7 +147,7 @@ Deno.serve(async (req) => {
     const planeSection = buildPlaneSection(selectedPlane, flightType);
     const carSection = buildCarSection(car);
     const savingsText = buildSavingsText(cheaperOption, savingsPP);
-    const comparisonUrl = `https://app-stg.policymarket.shop/sr-RS?utm_source=calculator&utm_medium=trip-cost&utm_campaign=${encodeURIComponent(destinationName)}`;
+    const comparisonUrl = `https://app.policymarket.shop/sr-RS?utm_source=calculator&utm_medium=trip-cost&utm_campaign=${destinationId}`;
 
     const emailPayload = {
       sender: { name: 'PolicyMarket', email: 'info@policymarket.co' },

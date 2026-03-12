@@ -99,6 +99,7 @@ export function TripCalculator() {
           <Card className="border-border bg-card shadow-sm">
             <CardContent className="p-6">
               <EmailCapture
+                destinationId={selectedDestination.id}
                 destinationName={selectedDestination.name}
                 days={days}
                 travelers={travelers}
