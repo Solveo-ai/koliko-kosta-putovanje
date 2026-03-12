@@ -184,6 +184,7 @@ Deno.serve(async (req) => {
       to: [{ email: trimmedEmail }],
       templateId: 1,
       params: {
+        debugVersion: "v2-transport-params",
         destinationName,
         days,
         travelers,
@@ -207,7 +208,7 @@ Deno.serve(async (req) => {
       },
     };
 
-    console.log("Sending transactional email with params:", emailPayload.params);
+    console.log("V2_TRANSPORT_PARAMS", emailPayload.params);
 
     const emailRes = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
