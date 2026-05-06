@@ -9,7 +9,7 @@ export function Header() {
         </a>
         <nav className="flex items-center gap-6">
           <a
-            href="https://mktg-stg.policymarket.shop/sr/contact"
+            href="https://policymarket.shop/sr/contact"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-foreground transition-colors hover:text-primary"
@@ -17,7 +17,7 @@ export function Header() {
             Kontaktirajte nas
           </a>
           <a
-            href="https://mktg-stg.policymarket.shop/sr/blog"
+            href="https://policymarket.shop/sr/blog"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-foreground transition-colors hover:text-primary"
