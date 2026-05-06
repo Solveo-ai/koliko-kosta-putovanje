@@ -1,10 +1,10 @@
-import policymarketLogo from '@/assets/policymarket-logo.svg';
+import policymarketLogo from "@/assets/policymarket-logo.svg";
 
 export function Header() {
   return (
     <header className="bg-card border-b border-border">
       <div className="container flex h-16 items-center justify-between px-4">
-        <a href="https://mktg-stg.policymarket.shop/sr">
+        <a href="https://policymarket.shop/sr">
           <img src={policymarketLogo} alt="PolicyMarket" className="h-6" />
         </a>
         <nav className="flex items-center gap-6">
