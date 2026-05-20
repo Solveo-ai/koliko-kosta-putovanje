@@ -35,8 +35,8 @@ export function TripCalculator() {
   }, [destination, days, travelers, accomLevel, flightType, showResults]);
 
   const comparisonUrl = selectedDestination
-    ? `https://policymarket.shop/?utm_source=calculator&utm_medium=trip-cost&utm_campaign=${selectedDestination.id}`
-    : 'https://policymarket.shop/';
+    ? `https://app.policymarket.shop/sr-RS?utm_source=calculator&utm_medium=trip-cost&utm_campaign=${selectedDestination.id}`
+    : 'https://app.policymarket.shop/sr-RS';
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
