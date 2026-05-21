@@ -78,7 +78,7 @@ export function TripCalculator() {
             <a
               href={comparisonUrl}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener"
             >
               Uporedi polise osiguranja →
             </a>
