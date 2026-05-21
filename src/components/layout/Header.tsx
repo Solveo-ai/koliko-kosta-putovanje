@@ -4,7 +4,7 @@ export function Header() {
   return (
     <header className="bg-card border-b border-border">
       <div className="container flex h-16 items-center justify-between px-4">
-        <a href="https://policymarket.shop/sr">
+        <a href="https://policymarket.shop/sr" target="_blank" rel="noopener">
           <img src={policymarketLogo} alt="PolicyMarket" className="h-6" />
         </a>
         <nav className="flex items-center gap-6">
