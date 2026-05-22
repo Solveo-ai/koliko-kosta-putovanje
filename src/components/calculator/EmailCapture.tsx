@@ -99,7 +99,7 @@ export function EmailCapture({
         <Button
           type="submit"
           variant="secondary"
-          disabled={isSubmitting}
+          disabled={isSubmitting || !email.trim()}
           className="whitespace-nowrap"
         >
           📧 Pošalji sebi plan
