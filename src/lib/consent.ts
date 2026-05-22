@@ -55,6 +55,9 @@ export function setConsent(prefs: ConsentPrefs) {
   };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+    // Simple flag for Google Tag Manager trigger
+    const flag = prefs.analytics || prefs.marketing ? "accepted" : "rejected";
+    localStorage.setItem("cookie_consent", flag);
   } catch {
     /* ignore */
   }
