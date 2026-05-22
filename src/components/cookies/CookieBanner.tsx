@@ -18,6 +18,7 @@ const CookieBanner = () => {
   const acceptAll = () => {
     setConsent({ analytics: true, marketing: true });
     setVisible(false);
+    window.location.reload();
   };
 
   const rejectAll = () => {

@@ -27,6 +27,9 @@ const CookiePreferences = ({ open, onOpenChange, onSaved }: Props) => {
     setConsent(prefs);
     onSaved?.();
     onOpenChange(false);
+    if (prefs.analytics || prefs.marketing) {
+      window.location.reload();
+    }
   };
 
   return (
