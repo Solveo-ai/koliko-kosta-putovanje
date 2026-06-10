@@ -26,7 +26,20 @@ declare global {
 function gtag(...args: unknown[]) {
   if (typeof window === "undefined") return;
   window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push(args);
+  // GTM expects the literal `arguments` object, not an array
+  // eslint-disable-next-line prefer-rest-params
+  window.dataLayer.push(arguments);
+}
+
+export function restoreConsent() {
+  const stored = getConsent();
+  if (!stored) return;
+  gtag("consent", "update", {
+    ad_storage: stored.marketing ? "granted" : "denied",
+    ad_user_data: stored.marketing ? "granted" : "denied",
+    ad_personalization: stored.marketing ? "granted" : "denied",
+    analytics_storage: stored.analytics ? "granted" : "denied",
+  });
 }
 
 export function getConsent(): StoredConsent | null {
